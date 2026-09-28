@@ -50,7 +50,6 @@
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         .dark ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 9999px; }
-        ::-webkit-scrollbar-thumb:hover { background: #059669; }
 
         @supports (-webkit-touch-callout: none) {
             input, select, textarea { font-size: 16px; }
@@ -80,6 +79,12 @@
 
         @keyframes fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .fade-in { animation: fade-in .3s ease-out; }
+
+        @keyframes slide-down { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-down { animation: slide-down .2s ease-out; }
+
+        @keyframes zoom-in { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: scale(1); } }
+        .zoom-in { animation: zoom-in .25s ease-out; }
 
         *:focus-visible { outline: 2px solid #16a34a; outline-offset: 2px; border-radius: 4px; }
 
@@ -121,12 +126,52 @@
         .star-filled { color: #f59e0b; }
         .star-empty { color: #cbd5e1; }
         .dark .star-empty { color: #475569; }
+
+        /* Header responsive helpers */
+        @media (max-width: 767px) {
+            .desktop-only-header { display: none !important; }
+        }
+        @media (min-width: 768px) {
+            .mobile-only-header { display: none !important; }
+        }
+
+        /* Mobile menu */
+        #mobileMenuPanel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height .3s ease-out;
+        }
+        #mobileMenuPanel.open {
+            max-height: 500px;
+        }
+
+        /* Announcement ticker effect for hero badges */
+        .ann-pulse {
+            animation: pulse-subtle 3s infinite ease-in-out;
+        }
+
+        /* Gallery image hover */
+        .gallery-item {
+            transition: transform .3s, box-shadow .3s;
+        }
+        .gallery-item:hover {
+            transform: scale(1.03);
+            box-shadow: 0 10px 25px -8px rgba(0,0,0,.3);
+        }
+
+        /* Lightbox */
+        #imageLightbox { transition: opacity .25s; }
+
+        /* Store gallery caption overlay */
+        .gallery-caption {
+            background: linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.4) 60%, transparent 100%);
+        }
     </style>
 </head>
 
 <body class="bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-300 min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
 
-    <!-- ============ Offline Indicator ============ -->
+    <!-- Offline Indicator -->
     <div id="offlineBanner" class="hidden-banner fixed top-0 left-0 right-0 z-[70] bg-amber-500 text-slate-950 text-center py-2 px-4 text-xs font-black no-print shadow-lg">
         <i class="fa-solid fa-wifi-slash" aria-hidden="true"></i>
         أنت غير متصل بالإنترنت — تعمل الآن من الذاكرة المحلية
@@ -151,58 +196,115 @@
 
     <!-- الترويسة الرئيسية -->
     <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 shadow-sm no-print" role="banner">
-        <div class="container mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2">
-            <a href="#" class="flex items-center gap-2 group min-w-0">
-                <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-brand-700 to-brand-500 flex items-center justify-center text-white text-lg sm:text-2xl shadow-md group-hover:scale-105 transition-transform flex-shrink-0">
-                    <i class="fa-solid fa-basket-shopping" aria-hidden="true"></i>
-                </div>
-                <div class="min-w-0">
-                    <div class="flex items-center gap-1 leading-tight">
-                        <span class="font-black text-sm sm:text-2xl text-slate-900 dark:text-white tracking-tight">سوبرماركت</span>
-                        <span class="font-black text-sm sm:text-2xl text-brand-700 dark:text-brand-400">أبو الحسن</span>
+        <div class="container mx-auto px-3 sm:px-4 py-2.5 sm:py-3">
+            <div class="flex items-center justify-between gap-2">
+                <a href="#" class="flex items-center gap-2 group min-w-0 flex-shrink-0">
+                    <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-brand-700 to-brand-500 flex items-center justify-center text-white text-lg sm:text-2xl shadow-md group-hover:scale-105 transition-transform flex-shrink-0">
+                        <i class="fa-solid fa-basket-shopping" aria-hidden="true"></i>
                     </div>
-                    <p class="hidden sm:block text-[11px] text-slate-500 dark:text-slate-400 font-medium -mt-0.5">جودة نثق بها .. عروض وأسعار تنافسية</p>
-                </div>
-            </a>
-
-            <div class="flex items-center gap-1 sm:gap-2">
-                <button onclick="openLoyaltyModal()" aria-label="نقاط الولاء" title="نقاطك" class="tap-target w-9 h-9 sm:w-auto sm:h-auto sm:px-2.5 sm:py-2 flex items-center justify-center gap-1.5 bg-gradient-to-tr from-amber-400 to-amber-500 text-slate-950 border border-amber-500 rounded-xl text-xs font-black hover:brightness-105 transition-all">
-                    <i class="fa-solid fa-star text-sm" aria-hidden="true"></i>
-                    <span id="loyaltyPointsBadge" class="font-mono">0</span>
-                </button>
-
-                <button onclick="openWishlistModal()" aria-label="المفضلة" title="المفضلة" class="tap-target w-9 h-9 sm:w-auto sm:h-auto sm:p-2.5 flex items-center justify-center rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors relative">
-                    <i class="fa-solid fa-heart text-base sm:text-lg" aria-hidden="true"></i>
-                    <span id="wishlistBadge" class="hidden absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-sm">0</span>
-                </button>
-
-                <button onclick="openCouponsCenterModal()" aria-label="الكوبونات" title="قسائم التخفيض" class="tap-target w-9 h-9 sm:w-auto sm:h-auto sm:px-3 sm:py-2 flex items-center justify-center gap-1.5 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-accent-amber border border-amber-300 dark:border-amber-700/60 rounded-xl text-xs font-black hover:bg-amber-100 transition-colors">
-                    <i class="fa-solid fa-ticket-simple text-sm" aria-hidden="true"></i>
-                    <span class="hidden md:inline">الكوبونات</span>
-                </button>
-
-                <button onclick="openOrdersModal()" aria-label="سجل الطلبات" title="سجل طلباتي" class="tap-target w-9 h-9 sm:w-auto sm:h-auto sm:p-2.5 flex items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors relative">
-                    <i class="fa-solid fa-file-invoice text-base sm:text-lg" aria-hidden="true"></i>
-                    <span id="orderBadge" class="hidden absolute -top-1 -right-1 bg-accent-amber text-slate-900 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-sm" aria-live="polite">0</span>
-                </button>
-
-                <a href="admin.html" target="_blank" rel="noopener" aria-label="إدارة المخزون" title="لوحة تحكم المنتجات"
-                   class="hidden sm:flex tap-target p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-brand-950/30 hover:text-brand-700 dark:hover:text-brand-400 transition-colors">
-                    <i class="fa-solid fa-boxes-stacked text-lg" aria-hidden="true"></i>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-1 leading-tight">
+                            <span class="font-black text-sm sm:text-2xl text-slate-900 dark:text-white tracking-tight">سوبرماركت</span>
+                            <span class="font-black text-sm sm:text-2xl text-brand-700 dark:text-brand-400">أبو الحسن</span>
+                        </div>
+                        <p class="hidden lg:block text-[11px] text-slate-500 dark:text-slate-400 font-medium -mt-0.5">جودة نثق بها .. عروض وأسعار تنافسية</p>
+                    </div>
                 </a>
 
-                <button id="themeToggleBtn" onclick="toggleTheme()" aria-label="تبديل المظهر" class="tap-target w-9 h-9 sm:w-auto sm:h-auto sm:p-2.5 flex items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                    <i id="themeIcon" class="fa-solid fa-moon text-base sm:text-lg" aria-hidden="true"></i>
-                </button>
+                <!-- Desktop Actions -->
+                <div class="desktop-only-header hidden md:flex items-center gap-1 lg:gap-2">
+                    <button onclick="openLoyaltyModal()" aria-label="نقاط الولاء" title="نقاطك" class="tap-target sm:w-auto sm:h-auto sm:px-2.5 sm:py-2 flex items-center justify-center gap-1.5 bg-gradient-to-tr from-amber-400 to-amber-500 text-slate-950 border border-amber-500 rounded-xl text-xs font-black hover:brightness-105 transition-all">
+                        <i class="fa-solid fa-star text-sm" aria-hidden="true"></i>
+                        <span id="loyaltyPointsBadgeDesktop" class="font-mono">0</span>
+                    </button>
 
-                <button onclick="toggleCartDrawer(true)" aria-label="فتح السلة" class="flex items-center gap-2 bg-brand-700 hover:bg-brand-800 text-white px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl font-bold text-sm shadow-md transition-all">
-                    <div class="relative">
-                        <i class="fa-solid fa-cart-shopping text-base sm:text-lg" aria-hidden="true"></i>
-                        <span id="cartCountBadge" class="absolute -top-2 -right-2.5 bg-accent-amber text-slate-950 font-black text-[10px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 shadow-sm" aria-live="polite">0</span>
-                    </div>
-                    <span class="hidden sm:inline">السلة</span>
-                    <span id="cartHeaderTotal" class="hidden md:inline font-black text-xs bg-brand-900/40 py-1 px-2.5 rounded-lg font-mono">0 ₪</span>
-                </button>
+                    <button onclick="openWishlistModal()" aria-label="المفضلة" title="المفضلة" class="tap-target sm:w-auto sm:h-auto sm:p-2.5 flex items-center justify-center rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors relative">
+                        <i class="fa-solid fa-heart text-base sm:text-lg" aria-hidden="true"></i>
+                        <span id="wishlistBadgeDesktop" class="hidden absolute -top-1 -right-1 bg-rose-600 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-sm">0</span>
+                    </button>
+
+                    <button onclick="openCouponsCenterModal()" aria-label="الكوبونات" title="قسائم التخفيض" class="tap-target sm:w-auto sm:h-auto sm:px-3 sm:py-2 flex items-center justify-center gap-1.5 bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-accent-amber border border-amber-300 dark:border-amber-700/60 rounded-xl text-xs font-black hover:bg-amber-100 transition-colors">
+                        <i class="fa-solid fa-ticket-simple text-sm" aria-hidden="true"></i>
+                        <span class="hidden lg:inline">الكوبونات</span>
+                    </button>
+
+                    <button onclick="openOrdersModal()" aria-label="سجل الطلبات" title="سجل طلباتي" class="tap-target sm:w-auto sm:h-auto sm:p-2.5 flex items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors relative">
+                        <i class="fa-solid fa-file-invoice text-base sm:text-lg" aria-hidden="true"></i>
+                        <span id="orderBadgeDesktop" class="hidden absolute -top-1 -right-1 bg-accent-amber text-slate-900 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-sm" aria-live="polite">0</span>
+                    </button>
+
+                    <a href="admin.html" target="_blank" rel="noopener" aria-label="إدارة المخزون" title="لوحة تحكم المنتجات"
+                       class="tap-target p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-brand-950/30 hover:text-brand-700 dark:hover:text-brand-400 transition-colors">
+                        <i class="fa-solid fa-boxes-stacked text-lg" aria-hidden="true"></i>
+                    </a>
+
+                    <button id="themeToggleBtnDesktop" onclick="toggleTheme()" aria-label="تبديل المظهر" class="tap-target p-2.5 flex items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                        <i id="themeIconDesktop" class="fa-solid fa-moon text-lg" aria-hidden="true"></i>
+                    </button>
+
+                    <button onclick="toggleCartDrawer(true)" aria-label="فتح السلة" class="flex items-center gap-2 bg-brand-700 hover:bg-brand-800 text-white px-3.5 py-2.5 rounded-xl font-bold text-sm shadow-md transition-all">
+                        <div class="relative">
+                            <i class="fa-solid fa-cart-shopping text-lg" aria-hidden="true"></i>
+                            <span id="cartCountBadgeDesktop" class="absolute -top-2 -right-2.5 bg-accent-amber text-slate-950 font-black text-[10px] min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 shadow-sm" aria-live="polite">0</span>
+                        </div>
+                        <span>السلة</span>
+                        <span id="cartHeaderTotalDesktop" class="font-black text-xs bg-brand-900/40 py-1 px-2.5 rounded-lg font-mono">0 ₪</span>
+                    </button>
+                </div>
+
+                <!-- Mobile Actions -->
+                <div class="mobile-only-header flex md:hidden items-center gap-1.5">
+                    <button onclick="openLoyaltyModal()" aria-label="نقاط الولاء" class="tap-target w-9 h-9 flex items-center justify-center gap-1 bg-gradient-to-tr from-amber-400 to-amber-500 text-slate-950 rounded-xl text-[11px] font-black">
+                        <i class="fa-solid fa-star text-xs" aria-hidden="true"></i>
+                        <span id="loyaltyPointsBadge" class="font-mono">0</span>
+                    </button>
+
+                    <button onclick="toggleCartDrawer(true)" aria-label="فتح السلة" class="relative flex items-center gap-1.5 bg-brand-700 hover:bg-brand-800 text-white px-2.5 py-2 rounded-xl font-bold shadow-md transition-all">
+                        <i class="fa-solid fa-cart-shopping text-base" aria-hidden="true"></i>
+                        <span id="cartCountBadge" class="absolute -top-1.5 -right-1.5 bg-accent-amber text-slate-950 font-black text-[9px] min-w-[16px] h-[16px] rounded-full flex items-center justify-center px-0.5 shadow-sm" aria-live="polite">0</span>
+                    </button>
+
+                    <button onclick="toggleMobileMenu()" aria-label="القائمة" class="tap-target w-9 h-9 flex items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                        <i id="mobileMenuIcon" class="fa-solid fa-bars text-base" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Panel -->
+            <div id="mobileMenuPanel" class="md:hidden mt-2">
+                <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-2 grid grid-cols-2 gap-1.5">
+                    <button onclick="openWishlistModal(); toggleMobileMenu(false);" class="flex items-center gap-2 p-3 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 transition-colors text-xs font-bold relative">
+                        <i class="fa-solid fa-heart text-rose-500"></i>
+                        <span>المفضلة</span>
+                        <span id="wishlistBadge" class="hidden absolute top-2 left-2 bg-rose-600 text-white text-[9px] font-black min-w-[16px] h-[16px] rounded-full flex items-center justify-center px-1">0</span>
+                    </button>
+
+                    <button onclick="openCouponsCenterModal(); toggleMobileMenu(false);" class="flex items-center gap-2 p-3 rounded-xl text-amber-700 dark:text-amber-400 hover:bg-white dark:hover:bg-slate-800 transition-colors text-xs font-bold">
+                        <i class="fa-solid fa-ticket-simple"></i>
+                        <span>الكوبونات</span>
+                    </button>
+
+                    <button onclick="openOrdersModal(); toggleMobileMenu(false);" class="flex items-center gap-2 p-3 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 transition-colors text-xs font-bold relative">
+                        <i class="fa-solid fa-file-invoice text-blue-500"></i>
+                        <span>سجل الطلبات</span>
+                        <span id="orderBadge" class="hidden absolute top-2 left-2 bg-accent-amber text-slate-900 text-[9px] font-black min-w-[16px] h-[16px] rounded-full flex items-center justify-center px-1">0</span>
+                    </button>
+
+                    <a href="admin.html" target="_blank" rel="noopener" onclick="toggleMobileMenu(false);" class="flex items-center gap-2 p-3 rounded-xl text-brand-700 dark:text-brand-400 hover:bg-white dark:hover:bg-slate-800 transition-colors text-xs font-bold">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                        <span>لوحة التحكم</span>
+                    </a>
+
+                    <button onclick="toggleTheme(); toggleMobileMenu(false);" class="flex items-center gap-2 p-3 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 transition-colors text-xs font-bold col-span-2">
+                        <i id="themeIconMobile" class="fa-solid fa-moon text-violet-500"></i>
+                        <span>تبديل المظهر</span>
+                    </button>
+
+                    <a href="https://wa.me/970599920081" target="_blank" rel="noopener" class="flex items-center gap-2 p-3 rounded-xl text-wa hover:bg-white dark:hover:bg-slate-800 transition-colors text-xs font-bold col-span-2">
+                        <i class="fa-brands fa-whatsapp text-lg"></i>
+                        <span class="font-mono">00970599920081</span>
+                    </a>
+                </div>
             </div>
         </div>
     </header>
@@ -212,8 +314,11 @@
         <div class="container mx-auto px-3 sm:px-4">
             <div class="bg-gradient-to-r from-brand-900 via-brand-800 to-emerald-800 rounded-2xl sm:rounded-3xl p-4 sm:p-9 text-white shadow-xl relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-4 sm:gap-8">
                 <div class="relative z-10 max-w-2xl text-center lg:text-right space-y-3 sm:space-y-4 w-full">
-                    <div class="inline-flex items-center gap-2 bg-accent-amber/20 border border-accent-amber/40 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold text-amber-200">
-                        <i class="fa-solid fa-tags text-accent-amber" aria-hidden="true"></i> عروض توفيرية استثنائية
+                    <div id="heroBadgesRow" class="flex flex-wrap items-center justify-center lg:justify-start gap-2">
+                        <div class="inline-flex items-center gap-2 bg-accent-amber/20 border border-accent-amber/40 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold text-amber-200">
+                            <i class="fa-solid fa-tags text-accent-amber" aria-hidden="true"></i> عروض توفيرية استثنائية
+                        </div>
+                        <!-- Daily announcements injected here -->
                     </div>
                     <h1 class="text-lg sm:text-4xl lg:text-5xl font-black leading-tight">
                         وفر أكثر مع عروض التخفيضات وكوبونات الهدايا
@@ -255,6 +360,39 @@
                 <div class="hidden sm:block absolute -bottom-16 -left-16 w-60 h-60 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
                 <div class="hidden sm:block absolute -top-16 -right-16 w-60 h-60 bg-accent-amber/20 rounded-full blur-3xl pointer-events-none"></div>
             </div>
+        </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <!-- ============ Daily Updates: Announcements + Store Gallery ===== -->
+    <!-- ================================================================ -->
+    <section id="dailyUpdatesSection" class="container mx-auto px-3 sm:px-4 pt-4 sm:pt-6 no-print hidden">
+        <div id="dailyUpdatesGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-5">
+
+            <!-- Announcements Box -->
+            <div id="dailyAnnouncementsBox" class="bg-white dark:bg-slate-800 rounded-2xl border border-amber-200 dark:border-amber-900/50 p-3 sm:p-4 shadow-sm hidden">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm sm:text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <span class="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center text-sm"><i class="fa-solid fa-bullhorn"></i></span>
+                        <span>إعلانات اليوم</span>
+                    </h3>
+                    <span id="dailyAnnCount" class="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">0</span>
+                </div>
+                <div id="dailyAnnouncementsList" class="space-y-2 max-h-[400px] overflow-y-auto"></div>
+            </div>
+
+            <!-- Store Gallery Box -->
+            <div id="dailyGalleryBox" class="bg-white dark:bg-slate-800 rounded-2xl border border-brand-200 dark:border-slate-700 p-3 sm:p-4 shadow-sm hidden">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm sm:text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                        <span class="w-8 h-8 rounded-lg bg-brand-700 text-white flex items-center justify-center text-sm"><i class="fa-solid fa-images"></i></span>
+                        <span>من متجرنا اليوم</span>
+                    </h3>
+                    <span id="dailyGalleryCount" class="text-[10px] font-mono text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">0</span>
+                </div>
+                <div id="dailyGalleryList" class="grid grid-cols-2 sm:grid-cols-3 gap-2"></div>
+            </div>
+
         </div>
     </section>
 
@@ -335,14 +473,8 @@
         <div class="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 mb-4 sm:mb-6 space-y-3">
             <div class="relative w-full">
                 <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm" aria-hidden="true"></i>
-                <input
-                    type="search"
-                    id="searchInput"
-                    oninput="handleSearchInput()"
-                    placeholder="ابحث عن أرز، حليب، زيت، جبنة..."
-                    aria-label="البحث عن منتج"
-                    class="w-full pl-4 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 transition-all"
-                >
+                <input type="search" id="searchInput" oninput="handleSearchInput()" placeholder="ابحث عن أرز، حليب، زيت، جبنة..." aria-label="البحث عن منتج"
+                    class="w-full pl-4 pr-10 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 transition-all">
             </div>
 
             <div class="flex items-center gap-2 flex-wrap">
@@ -363,9 +495,7 @@
                     <i class="fa-solid fa-tags" aria-hidden="true"></i>
                     <span id="discountFilterToggleText">العروض فقط</span>
                 </button>
-                <button onclick="resetFilters()" aria-label="إعادة ضبط" class="text-xs text-brand-700 dark:text-brand-400 hover:underline font-bold px-2 py-1 whitespace-nowrap">
-                    إعادة ضبط
-                </button>
+                <button onclick="resetFilters()" aria-label="إعادة ضبط" class="text-xs text-brand-700 dark:text-brand-400 hover:underline font-bold px-2 py-1 whitespace-nowrap">إعادة ضبط</button>
             </div>
         </div>
 
@@ -379,9 +509,7 @@
             </div>
             <h3 class="text-base sm:text-lg font-bold text-slate-800 dark:text-white">لم نعثر على هذا الصنف</h3>
             <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 px-4">جرب البحث بكلمة أخرى أو إلغاء الفلتر.</p>
-            <button onclick="resetFilters()" class="mt-4 px-5 py-2.5 bg-brand-700 hover:bg-brand-800 text-white rounded-xl text-xs font-bold transition-all shadow-md">
-                عرض جميع الأصناف
-            </button>
+            <button onclick="resetFilters()" class="mt-4 px-5 py-2.5 bg-brand-700 hover:bg-brand-800 text-white rounded-xl text-xs font-bold transition-all shadow-md">عرض جميع الأصناف</button>
         </div>
     </main>
 
@@ -433,21 +561,12 @@
                         <i class="fa-solid fa-ticket text-accent-amber" aria-hidden="true"></i>
                         <span>كوبون خصم؟</span>
                     </label>
-                    <button onclick="openCouponsCenterModal()" class="text-[11px] font-bold text-brand-700 dark:text-brand-400 hover:underline">
-                        عرض الكوبونات
-                    </button>
+                    <button onclick="openCouponsCenterModal()" class="text-[11px] font-bold text-brand-700 dark:text-brand-400 hover:underline">عرض الكوبونات</button>
                 </div>
                 <div class="flex gap-2">
-                    <input
-                        type="text"
-                        id="couponCodeInput"
-                        placeholder="مثال: TAWFEER10"
-                        aria-label="رمز الكوبون"
-                        class="flex-1 min-w-0 text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-brand-600 outline-none uppercase font-mono font-bold"
-                    >
-                    <button onclick="applyCouponDiscount()" class="bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-colors whitespace-nowrap">
-                        تطبيق
-                    </button>
+                    <input type="text" id="couponCodeInput" placeholder="مثال: TAWFEER10" aria-label="رمز الكوبون"
+                        class="flex-1 min-w-0 text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-brand-600 outline-none uppercase font-mono font-bold">
+                    <button onclick="applyCouponDiscount()" class="bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-colors whitespace-nowrap">تطبيق</button>
                 </div>
                 <div id="couponStatusNotice" class="text-[11px] font-bold hidden mt-1.5" role="status"></div>
             </div>
@@ -471,17 +590,11 @@
                     <span id="cartSubtotalVal" class="font-bold text-slate-900 dark:text-slate-100 font-mono">0 ₪</span>
                 </div>
                 <div id="cartDiscountRow" class="flex justify-between text-brand-700 dark:text-brand-400 hidden font-bold">
-                    <span class="flex items-center gap-1">
-                        <i class="fa-solid fa-tags" aria-hidden="true"></i>
-                        <span>خصم الكوبون:</span>
-                    </span>
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-tags" aria-hidden="true"></i><span>خصم الكوبون:</span></span>
                     <span id="cartDiscountVal" class="font-mono">- 0 ₪</span>
                 </div>
                 <div id="cartLoyaltyRow" class="flex justify-between text-amber-600 dark:text-amber-400 hidden font-bold">
-                    <span class="flex items-center gap-1">
-                        <i class="fa-solid fa-star" aria-hidden="true"></i>
-                        <span>خصم نقاط الولاء:</span>
-                    </span>
+                    <span class="flex items-center gap-1"><i class="fa-solid fa-star" aria-hidden="true"></i><span>خصم نقاط الولاء:</span></span>
                     <span id="cartLoyaltyVal" class="font-mono">- 0 ₪</span>
                 </div>
                 <div class="flex justify-between text-slate-600 dark:text-slate-400">
@@ -518,6 +631,17 @@
         </div>
     </div>
 
+    <!-- Image Lightbox -->
+    <div id="imageLightbox" onclick="closeLightbox()" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[65] hidden items-center justify-center p-4 no-print cursor-pointer">
+        <button onclick="closeLightbox()" aria-label="إغلاق" class="absolute top-4 left-4 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xl backdrop-blur-md">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="max-w-4xl w-full flex flex-col items-center gap-3" onclick="event.stopPropagation()">
+            <img id="lightboxImg" src="" alt="" class="w-full h-auto max-h-[80vh] object-contain rounded-2xl bg-slate-900 shadow-2xl zoom-in">
+            <p id="lightboxCaption" class="text-white text-sm sm:text-base font-bold text-center px-4"></p>
+        </div>
+    </div>
+
     <!-- Wishlist Modal -->
     <div id="wishlistModal" role="dialog" aria-modal="true" aria-labelledby="wishlistTitle" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 hidden items-center justify-center p-4 overflow-y-auto no-print modal-sheet">
         <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-700 my-6">
@@ -549,7 +673,7 @@
                     </div>
                     <div class="min-w-0">
                         <h3 id="loyaltyTitle" class="text-sm sm:text-lg font-black text-slate-900 dark:text-white truncate">برنامج نقاط الولاء</h3>
-                        <p class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">اكسب نقاطاً مع كل طلب واستبدلها بخصومات</p>
+                        <p class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">اكسب نقاطاً مع كل طلب</p>
                     </div>
                 </div>
                 <button onclick="closeLoyaltyModal()" aria-label="إغلاق" class="tap-target flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-lg p-1">
@@ -565,7 +689,7 @@
         <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-700 my-6">
             <div class="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-200 dark:border-slate-700 mb-3 sm:mb-4">
                 <div class="flex items-center gap-2.5 min-w-0">
-                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-amber-100 dark:bg-amber-950 text-accent-amber flex items-center justify-center text-lg sm:text-xl shadow-inner flex-shrink-0">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-100 dark:bg-amber-950 text-accent-amber flex items-center justify-center text-lg flex-shrink-0">
                         <i class="fa-solid fa-ticket-simple" aria-hidden="true"></i>
                     </div>
                     <div class="min-w-0">
@@ -603,9 +727,7 @@
                 <button onclick="closeAdminPinModal()" class="flex-1 px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors">إلغاء</button>
                 <button onclick="verifyAdminPin()" class="flex-1 px-4 py-2.5 bg-brand-700 hover:bg-brand-800 text-white text-xs font-black rounded-xl shadow transition-colors">دخول</button>
             </div>
-            <p class="text-[10px] text-slate-400 text-center mt-3">
-                رمز تجريبي <span class="font-mono font-bold">1234</span>
-            </p>
+            <p class="text-[10px] text-slate-400 text-center mt-3">رمز تجريبي <span class="font-mono font-bold">1234</span></p>
         </div>
     </div>
 
@@ -614,7 +736,7 @@
         <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-700 my-6">
             <div class="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-200 dark:border-slate-700 mb-3 sm:mb-4">
                 <div class="flex items-center gap-2.5 min-w-0">
-                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-400 flex items-center justify-center text-lg sm:text-xl flex-shrink-0">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-brand-100 dark:bg-brand-900/50 text-brand-700 dark:text-brand-400 flex items-center justify-center text-lg flex-shrink-0">
                         <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
                     </div>
                     <div class="min-w-0">
@@ -685,7 +807,7 @@
         <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-xl w-full p-4 sm:p-8 shadow-2xl border border-slate-200 dark:border-slate-700 my-6" id="printableInvoiceArea">
             <div class="flex items-center justify-between pb-4 sm:pb-5 border-b-2 border-brand-700 gap-3">
                 <div class="flex items-center gap-2.5 min-w-0">
-                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-brand-700 text-white flex items-center justify-center text-xl sm:text-2xl shadow-md flex-shrink-0">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-brand-700 text-white flex items-center justify-center text-xl sm:text-2xl shadow-md flex-shrink-0">
                         <i class="fa-solid fa-basket-shopping" aria-hidden="true"></i>
                     </div>
                     <div class="min-w-0">
@@ -762,7 +884,7 @@
 
             <div class="mt-5 pt-4 border-t border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-2 no-print">
                 <button onclick="closeInvoiceModal()" class="px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl transition-colors">إغلاق</button>
-                <div class="flex items-center gap-1.5 sm:gap-2">
+                <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
                     <button onclick="reorderFromInvoice()" class="px-3 py-2.5 bg-brand-50 dark:bg-slate-700 text-brand-700 dark:text-brand-300 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors hover:bg-brand-100">
                         <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
                         <span class="hidden sm:inline">أعد الطلب</span>
@@ -896,7 +1018,6 @@
                     <input type="url" id="newProdImage" placeholder="https://..." class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none text-left font-mono">
                 </div>
 
-                <!-- MODIFIED: أزرار الاستيراد والتصدير -->
                 <div class="pt-3 border-t border-slate-200 dark:border-slate-700 flex justify-between gap-2 flex-wrap">
                     <div class="flex gap-2 flex-wrap">
                         <button type="button" onclick="document.getElementById('csvImportInput').click()" class="px-3 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 rounded-xl border border-emerald-200 dark:border-emerald-800 transition-colors flex items-center gap-1">
@@ -906,9 +1027,7 @@
                         <button type="button" onclick="exportProductsCSV()" class="px-3 py-2 text-xs font-bold text-brand-700 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/40 hover:bg-brand-100 dark:hover:bg-brand-900/60 rounded-xl border border-brand-200 dark:border-brand-800 transition-colors flex items-center gap-1">
                             <i class="fa-solid fa-download" aria-hidden="true"></i> تصدير CSV
                         </button>
-                        <button type="button" onclick="resetDefaultSeedData()" class="px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl">
-                            استعادة
-                        </button>
+                        <button type="button" onclick="resetDefaultSeedData()" class="px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl">استعادة</button>
                     </div>
                     <div class="flex gap-2">
                         <button type="button" onclick="adminLogout()" class="px-3 py-2 text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl">خروج</button>
@@ -987,34 +1106,21 @@
     (function() {
         'use strict';
 
-        // ============ Error Tracking ============
         const ErrorLogger = {
             key: 'abuhassan_error_log',
             log(err, context = 'unknown') {
-                const entry = {
-                    ts: Date.now(),
-                    context,
-                    message: err && err.message ? err.message : String(err),
-                    stack: err && err.stack ? err.stack : null,
-                    url: location.href,
-                    ua: navigator.userAgent
-                };
+                const entry = { ts: Date.now(), context, message: err?.message ? err.message : String(err), stack: err?.stack || null, url: location.href, ua: navigator.userAgent };
                 try {
                     const logs = JSON.parse(localStorage.getItem(this.key) || '[]');
                     logs.push(entry);
                     localStorage.setItem(this.key, JSON.stringify(logs.slice(-30)));
                 } catch(_) {}
                 console.error(`[${context}]`, err);
-            },
-            getAll() {
-                try { return JSON.parse(localStorage.getItem(this.key) || '[]'); } catch(_) { return []; }
-            },
-            clear() { localStorage.removeItem(this.key); }
+            }
         };
         window.addEventListener('error', (e) => ErrorLogger.log(e.error || e.message, 'window.onerror'));
         window.addEventListener('unhandledrejection', (e) => ErrorLogger.log(e.reason, 'unhandledrejection'));
 
-        // ============ Store Config ============
         const STORE_CONFIG = Object.freeze({
             name: "سوبرماركت أبو الحسن",
             phoneDisplay: "00970599920081",
@@ -1047,13 +1153,19 @@
         ]);
 
         const ORDER_STATUS_FLOW = ['received', 'preparing', 'on_the_way', 'delivered'];
-
         const ORDER_STATUS_LABELS = Object.freeze({
             received:    { label: 'تم الاستلام',      icon: 'fa-clipboard-check', color: 'brand' },
             preparing:   { label: 'قيد التحضير',      icon: 'fa-boxes-packing',   color: 'amber' },
             on_the_way:  { label: 'في الطريق إليك',   icon: 'fa-truck-fast',      color: 'blue' },
             delivered:   { label: 'تم التسليم',       icon: 'fa-circle-check',    color: 'emerald' }
         });
+
+        const ANNOUNCEMENT_COLORS = {
+            amber: { bg: 'bg-amber-500', text: 'text-slate-950', border: 'border-amber-300', label: 'ذهبي' },
+            rose:  { bg: 'bg-rose-600',  text: 'text-white',     border: 'border-rose-400',  label: 'أحمر' },
+            brand: { bg: 'bg-brand-700', text: 'text-white',     border: 'border-brand-500', label: 'أخضر' },
+            blue:  { bg: 'bg-blue-600',  text: 'text-white',     border: 'border-blue-400',  label: 'أزرق' }
+        };
 
         const INITIAL_PRODUCTS = Object.freeze([
             { id:1,  name:"أرز بسمتي هندي عنبر ممتاز (5 كجم)", category:"المؤونة والزيوت", price:29.5, originalPrice:38, unit:"كيس 5 كجم", dealType:"percentage", badge:"وفر 22%", stock:42, sku:"RIC-001", rating:4.8, reviewsCount:23, salesCount:187, image:"https://images.unsplash.com/photo-1586201375761-83865001e31c?w=500&auto=format&fit=crop&q=80", description:"حبة طويلة فاخرة ورائحة زكية، ينضج بسهولة ومثالي لكافة الأكلات العائلية." },
@@ -1078,6 +1190,8 @@
             orders: [],
             wishlist: new Set(),
             recentlyViewed: [],
+            announcements: [],
+            gallery: [],
             coupon: null,
             loyaltyPoints: 0,
             redeemPoints: 0,
@@ -1205,7 +1319,6 @@
                 const items = await idb.getAll('cart');
                 const existing = items.find(i => i.id === product.id);
                 const availableStock = typeof product.stock === 'number' ? product.stock : Infinity;
-
                 if (existing) {
                     if (existing.quantity >= STORE_CONFIG.maxQuantityPerItem) return { ok: false, reason: 'max_qty' };
                     if (existing.quantity >= availableStock) return { ok: false, reason: 'stock_out' };
@@ -1214,15 +1327,10 @@
                 } else {
                     if (availableStock <= 0) return { ok: false, reason: 'stock_out' };
                     await idb.put('cart', {
-                        id: product.id,
-                        name: product.name,
-                        price: product.price,
+                        id: product.id, name: product.name, price: product.price,
                         originalPrice: product.originalPrice || product.price,
-                        unit: product.unit || 'حبة',
-                        image: product.image,
-                        dealType: product.dealType || 'normal',
-                        stock: availableStock,
-                        quantity: 1
+                        unit: product.unit || 'حبة', image: product.image,
+                        dealType: product.dealType || 'normal', stock: availableStock, quantity: 1
                     });
                 }
                 return { ok: true };
@@ -1231,16 +1339,10 @@
                 const item = await idb.get('cart', id);
                 if (!item) return { ok: false };
                 const next = item.quantity + delta;
-                if (next <= 0) {
-                    await idb.delete('cart', id);
-                } else if (next > STORE_CONFIG.maxQuantityPerItem) {
-                    return { ok: false, reason: 'max_qty' };
-                } else if (typeof item.stock === 'number' && next > item.stock) {
-                    return { ok: false, reason: 'stock_out' };
-                } else {
-                    item.quantity = next;
-                    await idb.put('cart', item);
-                }
+                if (next <= 0) { await idb.delete('cart', id); }
+                else if (next > STORE_CONFIG.maxQuantityPerItem) return { ok: false, reason: 'max_qty' };
+                else if (typeof item.stock === 'number' && next > item.stock) return { ok: false, reason: 'stock_out' };
+                else { item.quantity = next; await idb.put('cart', item); }
                 return { ok: true };
             },
             async remove(id) { return idb.delete('cart', id); },
@@ -1287,14 +1389,14 @@
             const toast = document.createElement('div');
             const styles = {
                 info:    { bg:'bg-slate-900 text-white',    icon:'fa-solid fa-circle-info' },
-                success: { bg:'bg-brand-800 text-white shadow-brand-800/30', icon:'fa-solid fa-circle-check text-accent-amber' },
+                success: { bg:'bg-brand-800 text-white', icon:'fa-solid fa-circle-check text-accent-amber' },
                 warning: { bg:'bg-accent-amber text-slate-950 font-bold',    icon:'fa-solid fa-triangle-exclamation' },
                 error:   { bg:'bg-rose-600 text-white',      icon:'fa-solid fa-circle-xmark' }
             };
             const s = styles[type] || styles.info;
             toast.className = `${s.bg} px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 text-xs sm:text-sm font-bold pointer-events-auto max-w-full border border-white/10 toast-enter`;
             toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
-            toast.innerHTML = `<i class="${s.icon} text-base flex-shrink-0" aria-hidden="true"></i><span class="flex-1">${escapeHtml(message)}</span>`;
+            toast.innerHTML = `<i class="${s.icon} text-base flex-shrink-0"></i><span class="flex-1">${escapeHtml(message)}</span>`;
             shelf.appendChild(toast);
             setTimeout(() => {
                 toast.style.transition = 'opacity .3s, transform .3s';
@@ -1305,9 +1407,7 @@
         }
 
         const ModalManager = {
-            activeModal: null,
-            lastFocused: null,
-            _handler: null,
+            activeModal: null, lastFocused: null, _handler: null,
             open(modalEl) {
                 if (!modalEl) return;
                 this.lastFocused = document.activeElement;
@@ -1340,23 +1440,174 @@
                 if (this.lastFocused && typeof this.lastFocused.focus === 'function') this.lastFocused.focus();
             },
             _focusables(root) {
-                return Array.from(root.querySelectorAll(
-                    'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-                )).filter(el => el.offsetParent !== null);
+                return Array.from(root.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter(el => el.offsetParent !== null);
             }
         };
 
+        // ============ Mobile Menu ============
+        function toggleMobileMenu(force) {
+            const panel = $('mobileMenuPanel');
+            const icon = $('mobileMenuIcon');
+            const shouldOpen = typeof force === 'boolean' ? force : !panel.classList.contains('open');
+            if (shouldOpen) {
+                panel.classList.add('open');
+                icon.className = 'fa-solid fa-xmark text-base';
+            } else {
+                panel.classList.remove('open');
+                icon.className = 'fa-solid fa-bars text-base';
+            }
+        }
+
+        // ============ Daily Announcements + Gallery ============
+        async function loadDailyContent() {
+            try {
+                const annRec = await SettingsRepo.get('daily_announcements');
+                AppState.announcements = Array.isArray(annRec) ? annRec : [];
+                const galRec = await SettingsRepo.get('store_gallery');
+                AppState.gallery = Array.isArray(galRec) ? galRec : [];
+            } catch (e) {
+                AppState.announcements = [];
+                AppState.gallery = [];
+            }
+        }
+
+        function renderHeroBadges() {
+            const row = $('heroBadgesRow');
+            if (!row) return;
+            row.querySelectorAll('[data-announcement]').forEach(el => el.remove());
+
+            const active = AppState.announcements
+                .filter(a => a.active !== false && a.text && a.text.trim())
+                .sort((a, b) => (b.priority || 5) - (a.priority || 5))
+                .slice(0, 3);
+
+            if (!active.length) return;
+
+            const html = active.map(a => {
+                const c = ANNOUNCEMENT_COLORS[a.color] || ANNOUNCEMENT_COLORS.amber;
+                return `
+                <div data-announcement="${escapeHtml(a.id)}"
+                     class="${c.bg} ${c.text} border ${c.border} px-3 py-1 rounded-full text-[10px] sm:text-xs font-black flex items-center gap-1.5 shadow-sm max-w-full fade-in ann-pulse">
+                    <i class="fa-solid ${escapeHtml(a.icon || 'fa-bullhorn')} animate-pulse" aria-hidden="true"></i>
+                    <span class="truncate max-w-[200px] sm:max-w-none" title="${escapeHtml(a.text)}">${escapeHtml(a.text)}</span>
+                </div>`;
+            }).join('');
+
+            row.insertAdjacentHTML('beforeend', html);
+        }
+
+        function renderDailyUpdates() {
+            const section = $('dailyUpdatesSection');
+            const grid = $('dailyUpdatesGrid');
+            const annBox = $('dailyAnnouncementsBox');
+            const galBox = $('dailyGalleryBox');
+            if (!section) return;
+
+            const activeAnns = AppState.announcements
+                .filter(a => a.active !== false && a.text && a.text.trim())
+                .sort((a, b) => (b.priority || 5) - (a.priority || 5));
+
+            const activeGal = AppState.gallery
+                .filter(g => g.active !== false && g.url && g.url.trim())
+                .sort((a, b) => (b.priority || 5) - (a.priority || 5));
+
+            // Hide entirely if both empty
+            if (!activeAnns.length && !activeGal.length) {
+                section.classList.add('hidden');
+                return;
+            }
+            section.classList.remove('hidden');
+
+            // Announcements
+            if (activeAnns.length) {
+                annBox.classList.remove('hidden');
+                $('dailyAnnCount').textContent = activeAnns.length;
+                $('dailyAnnouncementsList').innerHTML = activeAnns.map(a => {
+                    const c = ANNOUNCEMENT_COLORS[a.color] || ANNOUNCEMENT_COLORS.amber;
+                    return `
+                    <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-amber-400 dark:hover:border-amber-600 transition-colors fade-in">
+                        <div class="w-10 h-10 rounded-lg ${c.bg} ${c.text} flex items-center justify-center flex-shrink-0 shadow-sm">
+                            <i class="fa-solid ${escapeHtml(a.icon || 'fa-bullhorn')}"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-bold text-slate-900 dark:text-white leading-snug">${escapeHtml(a.text)}</p>
+                            <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                                <span class="text-[10px] font-black ${c.bg} ${c.text} px-1.5 py-0.5 rounded">${c.label}</span>
+                                ${a.priority >= 8 ? '<span class="text-[10px] font-black bg-rose-100 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 px-1.5 py-0.5 rounded">مهم</span>' : ''}
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+            } else {
+                annBox.classList.add('hidden');
+            }
+
+            // Gallery
+            if (activeGal.length) {
+                galBox.classList.remove('hidden');
+                $('dailyGalleryCount').textContent = activeGal.length;
+                $('dailyGalleryList').innerHTML = activeGal.map((g, i) => {
+                    const itemSpan = activeGal.length === 1 ? 'col-span-2 row-span-2' : (activeGal.length === 3 && i === 0 ? 'col-span-2' : '');
+                    return `
+                    <button onclick="openLightbox('${escapeHtml(g.url)}', '${escapeHtml(g.caption || '')}')"
+                        class="gallery-item group relative overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900 aspect-square ${itemSpan} border border-slate-200 dark:border-slate-700">
+                        <img src="${escapeHtml(g.url)}" alt="${escapeHtml(g.caption || 'صورة من المتجر')}"
+                             loading="lazy" decoding="async"
+                             onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'"
+                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        ${g.caption ? `
+                            <div class="absolute inset-x-0 bottom-0 gallery-caption p-2 text-right">
+                                <p class="text-white text-[10px] sm:text-xs font-bold line-clamp-2 leading-tight">${escapeHtml(g.caption)}</p>
+                            </div>
+                        ` : ''}
+                        <div class="absolute top-2 left-2 w-7 h-7 rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-md flex items-center justify-center text-slate-700 dark:text-slate-200 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <i class="fa-solid fa-expand text-xs"></i>
+                        </div>
+                    </button>`;
+                }).join('');
+            } else {
+                galBox.classList.add('hidden');
+            }
+
+            // Fix grid spans if only one panel visible
+            if (activeAnns.length && !activeGal.length) {
+                grid.className = 'grid grid-cols-1 gap-3 sm:gap-5';
+            } else if (!activeAnns.length && activeGal.length) {
+                grid.className = 'grid grid-cols-1 gap-3 sm:gap-5';
+            } else {
+                grid.className = 'grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-5';
+            }
+
+            // Also render hero badges
+            renderHeroBadges();
+        }
+
+        // ============ Lightbox ============
+        function openLightbox(url, caption) {
+            const lb = $('imageLightbox');
+            $('lightboxImg').src = url;
+            $('lightboxCaption').textContent = caption || '';
+            $('lightboxCaption').style.display = caption ? 'block' : 'none';
+            lb.classList.remove('hidden');
+            lb.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeLightbox() {
+            const lb = $('imageLightbox');
+            lb.classList.add('hidden');
+            lb.classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        // ============ Admin Access ============
         function requestAdminAccess() {
             try {
                 const newWin = window.open('admin.html', '_blank', 'noopener');
-                if (newWin) {
-                    showToast('تم فتح لوحة التحكم في تبويب جديد', 'info');
-                    return;
-                }
-                console.warn('Popup blocked, using fallback modal');
-            } catch (e) {
-                ErrorLogger.log(e, 'openAdmin');
-            }
+                if (newWin) { showToast('تم فتح لوحة التحكم في تبويب جديد', 'info'); return; }
+            } catch (e) { ErrorLogger.log(e, 'openAdmin'); }
             if (AppState.adminAuthed) { openInventoryManagerModal(); return; }
             const now = Date.now();
             if (AppState.lockoutUntil > now) {
@@ -1374,12 +1625,7 @@
             const pin = $('adminPinInput').value.trim();
             const errEl = $('adminPinError');
             const lockEl = $('adminLockoutNotice');
-
-            if (AppState.lockoutUntil > Date.now()) {
-                lockEl.classList.remove('hidden');
-                return;
-            }
-
+            if (AppState.lockoutUntil > Date.now()) { lockEl.classList.remove('hidden'); return; }
             const hash = await sha256(pin);
             if (hash === STORE_CONFIG.adminPinHash) {
                 AppState.adminAuthed = true;
@@ -1395,7 +1641,6 @@
                     AppState.lockoutUntil = Date.now() + STORE_CONFIG.lockoutMinutes * 60000;
                     lockEl.textContent = `تم تجاوز الحد. الحساب محظور ${STORE_CONFIG.lockoutMinutes} دقيقة.`;
                     lockEl.classList.remove('hidden');
-                    ErrorLogger.log(new Error('Admin PIN lockout triggered'), 'admin.auth');
                 } else {
                     const remaining = STORE_CONFIG.maxLoginAttempts - AppState.loginAttempts;
                     errEl.textContent = `رمز غير صحيح. محاولات متبقية: ${remaining}`;
@@ -1417,18 +1662,22 @@
             applyThemeMode(isDark ? 'light' : 'dark');
         }
         function applyThemeMode(theme) {
-            const icon = $('themeIcon');
+            const iconD = $('themeIconDesktop');
+            const iconM = $('themeIconMobile');
             if (theme === 'dark') {
                 document.documentElement.classList.add('dark');
-                icon.className = 'fa-solid fa-sun text-accent-amber text-base sm:text-lg';
+                if (iconD) iconD.className = 'fa-solid fa-sun text-accent-amber text-lg';
+                if (iconM) iconM.className = 'fa-solid fa-sun text-amber-400';
                 localStorage.setItem('abuhassan_theme', 'dark');
             } else {
                 document.documentElement.classList.remove('dark');
-                icon.className = 'fa-solid fa-moon text-slate-600 dark:text-slate-300 text-base sm:text-lg';
+                if (iconD) iconD.className = 'fa-solid fa-moon text-lg';
+                if (iconM) iconM.className = 'fa-solid fa-moon text-violet-500';
                 localStorage.setItem('abuhassan_theme', 'light');
             }
         }
 
+        // ============ Wishlist ============
         async function toggleWishlist(productId) {
             if (AppState.wishlist.has(productId)) {
                 AppState.wishlist.delete(productId);
@@ -1442,20 +1691,24 @@
             updateWishlistButtonStates();
         }
         function updateWishlistBadge() {
-            const badge = $('wishlistBadge');
             const count = AppState.wishlist.size;
-            if (count > 0) {
-                badge.textContent = count > 99 ? '99+' : count;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
+            const badgeD = $('wishlistBadgeDesktop');
+            const badgeM = $('wishlistBadge');
+            [badgeD, badgeM].forEach(b => {
+                if (!b) return;
+                if (count > 0) {
+                    b.textContent = count > 99 ? '99+' : count;
+                    b.classList.remove('hidden');
+                } else {
+                    b.classList.add('hidden');
+                }
+            });
         }
         function updateWishlistButtonStates() {
             document.querySelectorAll('[data-wishlist-id]').forEach(btn => {
                 const id = parseInt(btn.dataset.wishlistId, 10);
                 const isLiked = AppState.wishlist.has(id);
-                btn.innerHTML = `<i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart" aria-hidden="true"></i>`;
+                btn.innerHTML = `<i class="${isLiked ? 'fa-solid' : 'fa-regular'} fa-heart"></i>`;
                 btn.className = `tap-target w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-md transition-all active:scale-90 ${isLiked ? 'bg-rose-500 text-white' : 'bg-white/90 dark:bg-slate-800/90 text-rose-500 backdrop-blur-md'}`;
             });
         }
@@ -1463,33 +1716,24 @@
             const container = $('wishlistItemsList');
             const items = AppState.products.filter(p => AppState.wishlist.has(p.id));
             if (!items.length) {
-                container.innerHTML = `
-                    <div class="text-center py-10 text-slate-400">
-                        <i class="fa-regular fa-heart text-4xl mb-3 opacity-40" aria-hidden="true"></i>
-                        <p class="font-bold text-xs">قائمة المفضلة فارغة</p>
-                        <p class="text-[10px] mt-1">اضغط على ❤️ في أي منتج لإضافته هنا</p>
-                    </div>`;
+                container.innerHTML = `<div class="text-center py-10 text-slate-400"><i class="fa-regular fa-heart text-4xl mb-3 opacity-40"></i><p class="font-bold text-xs">قائمة المفضلة فارغة</p><p class="text-[10px] mt-1">اضغط على ❤️ في أي منتج لإضافته هنا</p></div>`;
             } else {
                 container.innerHTML = items.map(p => `
                     <div class="flex items-center gap-2.5 p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
-                        <img src="${escapeHtml(p.image || PLACEHOLDER_IMG)}" alt="" class="w-12 h-12 rounded-xl object-cover bg-slate-100 flex-shrink-0"
-                            onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
+                        <img src="${escapeHtml(p.image || PLACEHOLDER_IMG)}" alt="" class="w-12 h-12 rounded-xl object-cover bg-slate-100 flex-shrink-0" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
                         <div class="flex-1 min-w-0">
                             <h4 class="font-bold text-xs text-slate-900 dark:text-white truncate">${escapeHtml(p.name)}</h4>
                             <span class="text-[11px] font-black text-brand-700 dark:text-brand-400 font-mono">${formatCurrency(p.price)}</span>
                         </div>
-                        <button onclick="App.addToCart(${p.id})" class="tap-target w-9 h-9 bg-brand-700 hover:bg-brand-800 text-white rounded-xl flex items-center justify-center text-sm shadow" aria-label="أضف للسلة">
-                            <i class="fa-solid fa-cart-plus" aria-hidden="true"></i>
-                        </button>
-                        <button onclick="App.toggleWishlist(${p.id}).then(()=>openWishlistModal())" class="tap-target w-9 h-9 bg-rose-50 dark:bg-rose-950/40 text-rose-500 rounded-xl flex items-center justify-center text-sm" aria-label="إزالة">
-                            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                        </button>
+                        <button onclick="App.addToCart(${p.id})" class="tap-target w-9 h-9 bg-brand-700 hover:bg-brand-800 text-white rounded-xl flex items-center justify-center text-sm shadow" aria-label="أضف للسلة"><i class="fa-solid fa-cart-plus"></i></button>
+                        <button onclick="App.toggleWishlist(${p.id}).then(()=>openWishlistModal())" class="tap-target w-9 h-9 bg-rose-50 dark:bg-rose-950/40 text-rose-500 rounded-xl flex items-center justify-center text-sm" aria-label="إزالة"><i class="fa-solid fa-xmark"></i></button>
                     </div>`).join('');
             }
             ModalManager.open($('wishlistModal'));
         }
         function closeWishlistModal() { ModalManager.close($('wishlistModal')); }
 
+        // ============ Recently Viewed ============
         async function trackProductView(productId) {
             let list = AppState.recentlyViewed.filter(id => id !== productId);
             list.unshift(productId);
@@ -1501,15 +1745,12 @@
         function renderRecentlyViewed() {
             const section = $('recentlyViewedSection');
             const grid = $('recentlyViewedGrid');
-            const items = AppState.recentlyViewed
-                .map(id => AppState.products.find(p => p.id === id))
-                .filter(Boolean);
+            const items = AppState.recentlyViewed.map(id => AppState.products.find(p => p.id === id)).filter(Boolean);
             if (!items.length) { section.classList.add('hidden'); return; }
             section.classList.remove('hidden');
             grid.innerHTML = items.map(p => `
                 <button onclick="openProductDetail(${p.id})" class="flex-shrink-0 w-32 sm:w-40 text-right bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-2 hover:shadow-md transition-shadow">
-                    <img src="${escapeHtml(p.image || PLACEHOLDER_IMG)}" alt="" class="w-full h-20 sm:h-24 rounded-xl object-cover bg-slate-100 mb-1.5"
-                        onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
+                    <img src="${escapeHtml(p.image || PLACEHOLDER_IMG)}" alt="" class="w-full h-20 sm:h-24 rounded-xl object-cover bg-slate-100 mb-1.5" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
                     <h4 class="text-[11px] font-bold text-slate-900 dark:text-white line-clamp-2 leading-tight">${escapeHtml(p.name)}</h4>
                     <span class="text-[11px] font-black text-brand-700 dark:text-brand-400 font-mono block mt-0.5">${formatCurrency(p.price)}</span>
                 </button>`).join('');
@@ -1521,9 +1762,12 @@
             showToast("تم مسح السجل", "info");
         }
 
+        // ============ Loyalty ============
         function updateLoyaltyBadge() {
-            const b = $('loyaltyPointsBadge');
-            if (b) b.textContent = AppState.loyaltyPoints;
+            const bD = $('loyaltyPointsBadgeDesktop');
+            const bM = $('loyaltyPointsBadge');
+            if (bD) bD.textContent = AppState.loyaltyPoints;
+            if (bM) bM.textContent = AppState.loyaltyPoints;
         }
         async function addLoyaltyPoints(points) {
             AppState.loyaltyPoints += points;
@@ -1531,10 +1775,7 @@
             updateLoyaltyBadge();
         }
         async function redeemLoyaltyPoints() {
-            if (AppState.loyaltyPoints < 100) {
-                showToast("تحتاج 100 نقطة على الأقل للاستبدال", "warning");
-                return;
-            }
+            if (AppState.loyaltyPoints < 100) { showToast("تحتاج 100 نقطة على الأقل", "warning"); return; }
             const available = Math.floor(AppState.loyaltyPoints / 100) * 100;
             const usePoints = Math.min(available, AppState.loyaltyPoints);
             AppState.loyaltyPoints -= usePoints;
@@ -1552,79 +1793,60 @@
             const tier = pts >= 3000 ? 'بلاتيني' : pts >= 1500 ? 'ذهبي' : pts >= 500 ? 'فضي' : 'برونزي';
             const nextTier = pts >= 3000 ? null : pts >= 1500 ? { name:'بلاتيني', at:3000 } : pts >= 500 ? { name:'ذهبي', at:1500 } : { name:'فضي', at:500 };
             const progress = nextTier ? Math.min(100, (pts / nextTier.at) * 100) : 100;
-
             $('loyaltyBody').innerHTML = `
                 <div class="bg-gradient-to-tr from-amber-400 to-amber-500 rounded-2xl p-4 text-slate-950 mb-4">
                     <div class="text-[11px] font-bold opacity-80">رصيدك الحالي</div>
                     <div class="text-4xl font-black font-mono leading-none mt-1">${pts}</div>
                     <div class="text-[11px] font-bold mt-1">≈ ${value} ₪ عند الاستبدال</div>
-                    <div class="mt-3 flex items-center gap-2 text-[10px] font-black">
-                        <span class="bg-slate-900 text-amber-300 px-2 py-0.5 rounded-full">${tier}</span>
-                    </div>
+                    <div class="mt-3 flex items-center gap-2 text-[10px] font-black"><span class="bg-slate-900 text-amber-300 px-2 py-0.5 rounded-full">${tier}</span></div>
                 </div>
-                ${nextTier ? `
-                <div class="mb-4">
+                ${nextTier ? `<div class="mb-4">
                     <div class="flex justify-between text-[11px] font-bold text-slate-600 dark:text-slate-400 mb-1">
-                        <span>التقدم للمستوى ${nextTier.name}</span>
-                        <span class="font-mono">${pts} / ${nextTier.at}</span>
+                        <span>التقدم للمستوى ${nextTier.name}</span><span class="font-mono">${pts} / ${nextTier.at}</span>
                     </div>
                     <div class="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                         <div class="h-full bg-amber-500 progress-bar-fill" style="width:${progress}%"></div>
-                    </div>
-                </div>` : '<div class="text-center text-brand-700 dark:text-brand-400 font-black text-xs mb-4">🎉 وصلت للمستوى البلاتيني!</div>'}
-
+                    </div></div>` : '<div class="text-center text-brand-700 dark:text-brand-400 font-black text-xs mb-4">🎉 وصلت للمستوى البلاتيني!</div>'}
                 <div class="space-y-2 mb-4">
                     <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl flex items-center justify-between text-xs">
-                        <span class="text-slate-600 dark:text-slate-400"><i class="fa-solid fa-coins text-amber-500" aria-hidden="true"></i> كل 1 ₪ = 1 نقطة</span>
+                        <span class="text-slate-600 dark:text-slate-400"><i class="fa-solid fa-coins text-amber-500"></i> كل 1 ₪ = 1 نقطة</span>
                         <span class="font-black text-slate-900 dark:text-white">+1</span>
                     </div>
                     <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl flex items-center justify-between text-xs">
-                        <span class="text-slate-600 dark:text-slate-400"><i class="fa-solid fa-gift text-amber-500" aria-hidden="true"></i> 100 نقطة = 5 ₪ خصم</span>
+                        <span class="text-slate-600 dark:text-slate-400"><i class="fa-solid fa-gift text-amber-500"></i> 100 نقطة = 5 ₪ خصم</span>
                         <span class="font-black text-slate-900 dark:text-white">5 ₪</span>
                     </div>
                 </div>
-
-                <button onclick="redeemLoyaltyPoints()" ${pts < 100 ? 'disabled' : ''}
-                    class="w-full py-3 rounded-xl font-black text-sm transition-all ${pts < 100 ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-gradient-to-tr from-amber-400 to-amber-500 text-slate-950 hover:brightness-105 active:scale-95 shadow-md'}">
-                    <i class="fa-solid fa-star" aria-hidden="true"></i>
-                    استبدل 100 نقطة (5 ₪)
+                <button onclick="redeemLoyaltyPoints()" ${pts < 100 ? 'disabled' : ''} class="w-full py-3 rounded-xl font-black text-sm transition-all ${pts < 100 ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-gradient-to-tr from-amber-400 to-amber-500 text-slate-950 hover:brightness-105 active:scale-95 shadow-md'}">
+                    <i class="fa-solid fa-star"></i> استبدل 100 نقطة (5 ₪)
                 </button>`;
             ModalManager.open($('loyaltyModal'));
         }
         function closeLoyaltyModal() { ModalManager.close($('loyaltyModal')); }
 
+        // ============ Product Detail ============
         async function openProductDetail(productId) {
             const p = AppState.products.find(x => x.id === productId);
             if (!p) return;
             await trackProductView(productId);
-
             const reviews = await ReviewRepo.forProduct(productId);
             const avgRating = reviews.length ? (reviews.reduce((s, r) => s + r.stars, 0) / reviews.length) : (p.rating || 0);
             const related = AppState.products.filter(x => x.category === p.category && x.id !== p.id).slice(0, 4);
             const stockLabel = p.stock === 0 ? { text:'نفذ المخزون', cls:'bg-rose-100 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300' }
                              : p.stock <= 10 ? { text:`كمية محدودة (${p.stock})`, cls:'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300' }
                              : { text:`متوفر (${p.stock})`, cls:'bg-brand-100 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300' };
-
             const saveAmt = p.originalPrice ? (p.originalPrice - p.price).toFixed(1) : null;
             const isWished = AppState.wishlist.has(p.id);
-
             $('pdContent').innerHTML = `
                 <div class="relative">
-                    <img src="${escapeHtml(p.image || PLACEHOLDER_IMG)}" alt="${escapeHtml(p.name)}" class="w-full h-56 sm:h-72 object-cover bg-slate-100"
-                        onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
-                    <button onclick="ModalManager.close(document.getElementById('productDetailModal'))" aria-label="إغلاق"
-                        class="absolute top-3 left-3 tap-target w-9 h-9 rounded-full bg-white/95 dark:bg-slate-800/95 text-slate-700 dark:text-slate-200 flex items-center justify-center shadow-md">
-                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                    </button>
-                    <button data-wishlist-id="${p.id}" onclick="App.toggleWishlist(${p.id})" aria-label="مفضلة"
-                        class="absolute top-3 right-3 ${isWished ? 'bg-rose-500 text-white' : 'bg-white/90 dark:bg-slate-800/90 text-rose-500'} w-9 h-9 rounded-full flex items-center justify-center shadow-md text-sm">
-                        <i class="${isWished ? 'fa-solid' : 'fa-regular'} fa-heart" aria-hidden="true"></i>
-                    </button>
+                    <img src="${escapeHtml(p.image || PLACEHOLDER_IMG)}" alt="${escapeHtml(p.name)}" class="w-full h-56 sm:h-72 object-cover bg-slate-100" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
+                    <button onclick="ModalManager.close(document.getElementById('productDetailModal'))" aria-label="إغلاق" class="absolute top-3 left-3 tap-target w-9 h-9 rounded-full bg-white/95 dark:bg-slate-800/95 text-slate-700 dark:text-slate-200 flex items-center justify-center shadow-md"><i class="fa-solid fa-xmark"></i></button>
+                    <button data-wishlist-id="${p.id}" onclick="App.toggleWishlist(${p.id})" aria-label="مفضلة" class="absolute top-3 right-3 ${isWished ? 'bg-rose-500 text-white' : 'bg-white/90 dark:bg-slate-800/90 text-rose-500'} w-9 h-9 rounded-full flex items-center justify-center shadow-md text-sm"><i class="${isWished ? 'fa-solid' : 'fa-regular'} fa-heart"></i></button>
                     ${p.badge ? `<span class="absolute bottom-3 right-3 bg-rose-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg shadow">${escapeHtml(p.badge)}</span>` : ''}
                 </div>
                 <div class="p-4 sm:p-6 space-y-4">
                     <div>
-                        <div class="flex items-center gap-2 mb-1.5">
+                        <div class="flex items-center gap-2 mb-1.5 flex-wrap">
                             <span class="text-[11px] font-bold text-brand-700 dark:text-brand-400">${escapeHtml(p.category)}</span>
                             <span class="${stockLabel.cls} text-[10px] font-black px-2 py-0.5 rounded-full">${stockLabel.text}</span>
                         </div>
@@ -1634,12 +1856,10 @@
                             <span class="text-[11px] text-slate-500 dark:text-slate-400">(${reviews.length || p.reviewsCount || 0} تقييم)</span>
                         </div>
                     </div>
-
                     <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">${escapeHtml(p.description || '')}</p>
-
                     <div class="bg-slate-50 dark:bg-slate-900 rounded-2xl p-3 flex items-center justify-between">
                         <div>
-                            <div class="flex items-baseline gap-2">
+                            <div class="flex items-baseline gap-2 flex-wrap">
                                 <span class="text-2xl font-black text-slate-900 dark:text-white font-mono">${formatCurrency(p.price)}</span>
                                 ${p.originalPrice ? `<span class="text-sm text-slate-400 line-through font-mono">${p.originalPrice} ₪</span>` : ''}
                             </div>
@@ -1650,34 +1870,24 @@
                             <div class="text-xs font-bold text-slate-700 dark:text-slate-200">${escapeHtml(p.unit || 'حبة')}</div>
                         </div>
                     </div>
-
                     ${p.sku ? `<div class="text-[10px] text-slate-400 font-mono">SKU: ${escapeHtml(p.sku)}</div>` : ''}
-
-                    <button onclick="App.addToCart(${p.id}).then(()=>ModalManager.close(document.getElementById('productDetailModal')))"
-                        ${p.stock === 0 ? 'disabled' : ''}
-                        class="w-full py-3 rounded-xl font-black text-sm transition-all flex items-center justify-center gap-2 ${p.stock === 0 ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-brand-700 hover:bg-brand-800 text-white shadow-lg shadow-brand-700/25 active:scale-95'}">
-                        <i class="fa-solid fa-cart-plus" aria-hidden="true"></i>
+                    <button onclick="App.addToCart(${p.id}).then(()=>ModalManager.close(document.getElementById('productDetailModal')))" ${p.stock === 0 ? 'disabled' : ''} class="w-full py-3 rounded-xl font-black text-sm transition-all flex items-center justify-center gap-2 ${p.stock === 0 ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-brand-700 hover:bg-brand-800 text-white shadow-lg shadow-brand-700/25 active:scale-95'}">
+                        <i class="fa-solid fa-cart-plus"></i>
                         <span>${p.stock === 0 ? 'نفذ المخزون' : 'أضف إلى السلة'}</span>
                     </button>
-
-                    ${related.length ? `
-                    <div class="pt-4 border-t border-slate-200 dark:border-slate-700">
+                    ${related.length ? `<div class="pt-4 border-t border-slate-200 dark:border-slate-700">
                         <h3 class="text-sm font-black text-slate-900 dark:text-white mb-2.5">منتجات ذات صلة</h3>
                         <div class="grid grid-cols-2 gap-2">
-                            ${related.map(r => `
-                                <button onclick="openProductDetail(${r.id})" class="text-right bg-slate-50 dark:bg-slate-900 rounded-xl p-2 border border-slate-200 dark:border-slate-700 hover:border-brand-500 transition-colors">
-                                    <img src="${escapeHtml(r.image || PLACEHOLDER_IMG)}" alt="" class="w-full h-16 rounded-lg object-cover bg-slate-100 mb-1.5"
-                                        onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
-                                    <div class="text-[10px] font-bold text-slate-900 dark:text-white line-clamp-2 leading-tight">${escapeHtml(r.name)}</div>
-                                    <div class="text-[11px] font-black text-brand-700 dark:text-brand-400 font-mono mt-0.5">${formatCurrency(r.price)}</div>
-                                </button>`).join('')}
-                        </div>
-                    </div>` : ''}
-
+                            ${related.map(r => `<button onclick="openProductDetail(${r.id})" class="text-right bg-slate-50 dark:bg-slate-900 rounded-xl p-2 border border-slate-200 dark:border-slate-700 hover:border-brand-500 transition-colors">
+                                <img src="${escapeHtml(r.image || PLACEHOLDER_IMG)}" alt="" class="w-full h-16 rounded-lg object-cover bg-slate-100 mb-1.5" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
+                                <div class="text-[10px] font-bold text-slate-900 dark:text-white line-clamp-2 leading-tight">${escapeHtml(r.name)}</div>
+                                <div class="text-[11px] font-black text-brand-700 dark:text-brand-400 font-mono mt-0.5">${formatCurrency(r.price)}</div>
+                            </button>`).join('')}
+                        </div></div>` : ''}
                     <div class="pt-4 border-t border-slate-200 dark:border-slate-700">
                         <h3 class="text-sm font-black text-slate-900 dark:text-white mb-2">قيّم هذا المنتج</h3>
                         <div id="pdReviewStars" class="flex gap-1 mb-2" data-selected="0">
-                            ${[1,2,3,4,5].map(n => `<button type="button" onclick="setReviewStar(${n})" data-star="${n}" class="text-2xl star-empty transition-colors"><i class="fa-solid fa-star" aria-hidden="true"></i></button>`).join('')}
+                            ${[1,2,3,4,5].map(n => `<button type="button" onclick="setReviewStar(${n})" data-star="${n}" class="text-2xl star-empty transition-colors"><i class="fa-solid fa-star"></i></button>`).join('')}
                         </div>
                         <textarea id="pdReviewText" rows="2" maxlength="200" placeholder="اكتب مراجعتك (اختياري)..." class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 outline-none"></textarea>
                         <button onclick="submitReview(${p.id})" class="mt-2 w-full py-2 bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 text-white text-xs font-bold rounded-xl transition-colors">إرسال التقييم</button>
@@ -1688,11 +1898,11 @@
         function renderStars(rating) {
             const full = Math.floor(rating);
             const hasHalf = rating - full >= 0.5;
-            let html = '<div class="flex gap-0.5 text-xs" aria-label="التقييم">';
+            let html = '<div class="flex gap-0.5 text-xs">';
             for (let i = 0; i < 5; i++) {
-                if (i < full) html += '<i class="fa-solid fa-star star-filled" aria-hidden="true"></i>';
-                else if (i === full && hasHalf) html += '<i class="fa-solid fa-star-half-stroke star-filled" aria-hidden="true"></i>';
-                else html += '<i class="fa-regular fa-star star-empty" aria-hidden="true"></i>';
+                if (i < full) html += '<i class="fa-solid fa-star star-filled"></i>';
+                else if (i === full && hasHalf) html += '<i class="fa-solid fa-star-half-stroke star-filled"></i>';
+                else html += '<i class="fa-regular fa-star star-empty"></i>';
             }
             return html + '</div>';
         }
@@ -1714,110 +1924,70 @@
             openProductDetail(productId);
         }
 
+        // ============ Flash Deals ============
         function renderFlashDealsMiniGrid() {
             const container = $('flashDealsMiniGrid');
             if (!container) return;
-            const flashItems = AppState.products
-                .filter(p => p.dealType === 'flash' || (p.originalPrice && p.originalPrice > p.price))
-                .slice(0, 3);
-            if (!flashItems.length) {
-                container.innerHTML = `<p class="col-span-full text-center text-xs text-slate-400 py-3">لا توجد صفقات خاطفة حالياً.</p>`;
-                return;
-            }
+            const flashItems = AppState.products.filter(p => p.dealType === 'flash' || (p.originalPrice && p.originalPrice > p.price)).slice(0, 3);
+            if (!flashItems.length) { container.innerHTML = `<p class="col-span-full text-center text-xs text-slate-400 py-3">لا توجد صفقات خاطفة حالياً.</p>`; return; }
             container.innerHTML = flashItems.map(p => {
                 const saveAmount = p.originalPrice ? (p.originalPrice - p.price).toFixed(1) : 0;
                 const soldOut = p.stock === 0;
                 return `
                     <div class="bg-white dark:bg-slate-800 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border border-rose-200/80 dark:border-rose-900/60 shadow-sm flex items-center justify-between gap-2.5 sm:gap-3 flash-card-glow hover:shadow-md transition-shadow">
-                        <img src="${escapeHtml(p.image || PLACEHOLDER_IMG)}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async"
-                             class="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover bg-slate-100 flex-shrink-0 ${soldOut ? 'opacity-60' : ''}"
-                             onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
+                        <img src="${escapeHtml(p.image || PLACEHOLDER_IMG)}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async" class="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover bg-slate-100 flex-shrink-0 ${soldOut ? 'opacity-60' : ''}" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
                         <div class="flex-1 min-w-0">
-                            <span class="text-[9px] sm:text-[10px] font-black text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-1.5 sm:px-2 py-0.5 rounded-full inline-block mb-1">
-                                ${soldOut ? 'نفذ' : `وفر ${saveAmount} ₪`}
-                            </span>
+                            <span class="text-[9px] sm:text-[10px] font-black text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-1.5 sm:px-2 py-0.5 rounded-full inline-block mb-1">${soldOut ? 'نفذ' : `وفر ${saveAmount} ₪`}</span>
                             <h4 class="font-black text-[11px] sm:text-xs text-slate-900 dark:text-white truncate" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</h4>
                             <div class="flex items-baseline gap-1.5 mt-0.5">
                                 <span class="text-xs sm:text-sm font-black text-rose-600 dark:text-rose-400 font-mono">${formatCurrency(p.price)}</span>
                                 ${p.originalPrice ? `<span class="text-[10px] sm:text-xs text-slate-400 line-through font-mono">${p.originalPrice} ₪</span>` : ''}
                             </div>
                         </div>
-                        <button onclick="App.addToCart(${p.id})" ${soldOut ? 'disabled' : ''} aria-label="أضف ${escapeHtml(p.name)}"
-                            class="tap-target ${soldOut ? 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed' : 'bg-rose-600 hover:bg-rose-700'} text-white w-9 h-9 rounded-xl flex items-center justify-center text-sm shadow transition-transform active:scale-95 flex-shrink-0">
-                            <i class="fa-solid ${soldOut ? 'fa-ban' : 'fa-cart-plus'}" aria-hidden="true"></i>
-                        </button>
+                        <button onclick="App.addToCart(${p.id})" ${soldOut ? 'disabled' : ''} class="tap-target ${soldOut ? 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed' : 'bg-rose-600 hover:bg-rose-700'} text-white w-9 h-9 rounded-xl flex items-center justify-center text-sm shadow transition-transform active:scale-95 flex-shrink-0"><i class="fa-solid ${soldOut ? 'fa-ban' : 'fa-cart-plus'}"></i></button>
                     </div>`;
             }).join('');
         }
 
+        // ============ Categories & Products ============
         function renderCategoryTabs() {
             const categories = ["الكل", ...new Set(AppState.products.map(p => p.category))];
             const container = $('categoryTabsContainer');
             container.innerHTML = categories.map(cat => {
                 const isActive = AppState.filters.category === cat && !AppState.filters.discountOnly;
-                return `
-                    <button role="tab" aria-selected="${isActive}"
-                        onclick="App.selectCategory('${escapeHtml(cat).replace(/'/g, "\\'")}')"
-                        class="px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
-                            isActive
-                            ? 'bg-brand-700 text-white shadow-md shadow-brand-700/20'
-                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
-                        }">
-                        ${escapeHtml(cat)}
-                    </button>`;
+                return `<button role="tab" aria-selected="${isActive}" onclick="App.selectCategory('${escapeHtml(cat).replace(/'/g, "\\'")}')" class="px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-200 flex-shrink-0 ${isActive ? 'bg-brand-700 text-white shadow-md shadow-brand-700/20' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'}">${escapeHtml(cat)}</button>`;
             }).join('');
         }
 
         function renderProductsGrid(items) {
             const grid = $('productsGrid');
             const noResults = $('noResultsState');
-
-            if (!items || !items.length) {
-                grid.innerHTML = '';
-                noResults.classList.remove('hidden');
-                return;
-            }
+            if (!items || !items.length) { grid.innerHTML = ''; noResults.classList.remove('hidden'); return; }
             noResults.classList.add('hidden');
-
             grid.innerHTML = items.map(p => {
                 let discountPercent = null;
-                if (p.originalPrice && p.originalPrice > p.price) {
-                    discountPercent = Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100);
-                }
+                if (p.originalPrice && p.originalPrice > p.price) discountPercent = Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100);
                 const img = escapeHtml(p.image || PLACEHOLDER_IMG);
                 const nameSafe = escapeHtml(p.name);
                 const isFlash = p.dealType === 'flash';
                 const soldOut = p.stock === 0;
                 const lowStock = !soldOut && p.stock <= 10;
                 const isWished = AppState.wishlist.has(p.id);
-
                 return `
                 <article class="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border ${isFlash ? 'border-rose-400 dark:border-rose-800 shadow-rose-100' : 'border-slate-200/90 dark:border-slate-700'} shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group justify-between ${soldOut ? 'opacity-75' : ''}">
                     <div class="relative overflow-hidden bg-slate-100 dark:bg-slate-900 aspect-square sm:aspect-[4/3]">
-                        <button onclick="openProductDetail(${p.id})" class="block w-full h-full" aria-label="عرض تفاصيل ${nameSafe}">
-                            <img src="${img}" alt="${nameSafe}" loading="lazy" decoding="async"
-                                onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'"
-                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${soldOut ? 'grayscale' : ''}">
+                        <button onclick="openProductDetail(${p.id})" class="block w-full h-full">
+                            <img src="${img}" alt="${nameSafe}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${soldOut ? 'grayscale' : ''}">
                         </button>
-
-                        <button data-wishlist-id="${p.id}" onclick="event.stopPropagation(); App.toggleWishlist(${p.id})" aria-label="مفضلة"
-                            class="absolute top-1.5 sm:top-2.5 left-1.5 sm:left-2.5 ${isWished ? 'bg-rose-500 text-white' : 'bg-white/90 dark:bg-slate-800/90 text-rose-500 backdrop-blur-md'} tap-target w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-md transition-all active:scale-90">
-                            <i class="${isWished ? 'fa-solid' : 'fa-regular'} fa-heart" aria-hidden="true"></i>
-                        </button>
-
+                        <button data-wishlist-id="${p.id}" onclick="event.stopPropagation(); App.toggleWishlist(${p.id})" class="absolute top-1.5 sm:top-2.5 left-1.5 sm:left-2.5 ${isWished ? 'bg-rose-500 text-white' : 'bg-white/90 dark:bg-slate-800/90 text-rose-500 backdrop-blur-md'} tap-target w-8 h-8 rounded-full flex items-center justify-center text-sm shadow-md transition-all active:scale-90"><i class="${isWished ? 'fa-solid' : 'fa-regular'} fa-heart"></i></button>
                         <div class="absolute top-1.5 sm:top-2.5 right-1.5 sm:right-2.5 flex flex-col gap-1 items-end pointer-events-none">
-                            ${p.badge ? `<span class="bg-rose-600 text-white text-[9px] sm:text-[10px] font-black px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg shadow-md flex items-center gap-1 max-w-[90px] truncate"><i class="fa-solid fa-fire text-[8px] sm:text-[9px] flex-shrink-0" aria-hidden="true"></i><span class="truncate">${escapeHtml(p.badge)}</span></span>` : ''}
+                            ${p.badge ? `<span class="bg-rose-600 text-white text-[9px] sm:text-[10px] font-black px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg shadow-md flex items-center gap-1 max-w-[90px] truncate"><i class="fa-solid fa-fire text-[8px] sm:text-[9px] flex-shrink-0"></i><span class="truncate">${escapeHtml(p.badge)}</span></span>` : ''}
                             ${discountPercent ? `<span class="bg-accent-amber text-slate-950 text-[9px] sm:text-[10px] font-black px-1.5 sm:px-2 py-0.5 rounded-md shadow-sm font-mono">-${discountPercent}%</span>` : ''}
                         </div>
-
-                        <span class="absolute bottom-1.5 sm:bottom-2.5 right-1.5 sm:right-2.5 bg-black/60 backdrop-blur-md text-white text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md pointer-events-none">
-                            ${escapeHtml(p.unit || 'حبة')}
-                        </span>
-
+                        <span class="absolute bottom-1.5 sm:bottom-2.5 right-1.5 sm:right-2.5 bg-black/60 backdrop-blur-md text-white text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-md pointer-events-none">${escapeHtml(p.unit || 'حبة')}</span>
                         ${soldOut ? `<div class="absolute inset-0 bg-slate-950/40 flex items-center justify-center pointer-events-none"><span class="bg-rose-600 text-white text-[11px] font-black px-3 py-1.5 rounded-lg">نفذ المخزون</span></div>` : ''}
                         ${lowStock ? `<span class="absolute bottom-1.5 left-1.5 sm:bottom-2.5 sm:left-2.5 bg-amber-500 text-slate-950 text-[9px] sm:text-[10px] font-black px-1.5 sm:px-2 py-0.5 rounded-md pointer-events-none">آخر ${p.stock} قطع</span>` : ''}
                     </div>
-
                     <div class="p-2.5 sm:p-4 flex-1 flex flex-col justify-between">
                         <div>
                             <div class="flex items-center justify-between gap-1 mb-0.5 sm:mb-1">
@@ -1829,7 +1999,6 @@
                             </button>
                             <p class="hidden sm:block text-slate-500 dark:text-slate-400 text-xs line-clamp-2 mb-3 leading-relaxed">${escapeHtml(p.description || '')}</p>
                         </div>
-
                         <div class="pt-2 sm:pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-1.5">
                             <div class="min-w-0">
                                 <div class="flex items-baseline gap-1 flex-wrap">
@@ -1837,9 +2006,8 @@
                                     ${p.originalPrice ? `<span class="text-[10px] sm:text-xs text-slate-400 line-through font-mono">${p.originalPrice} ₪</span>` : ''}
                                 </div>
                             </div>
-                            <button onclick="App.addToCart(${p.id})" ${soldOut ? 'disabled' : ''} aria-label="أضف ${nameSafe}"
-                                class="tap-target ${soldOut ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-brand-50 hover:bg-brand-700 dark:bg-slate-700 dark:hover:bg-brand-700 text-brand-700 hover:text-white dark:text-brand-300 dark:hover:text-white'} p-2 sm:px-3 sm:py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-sm active:scale-95 flex-shrink-0">
-                                <i class="fa-solid ${soldOut ? 'fa-ban' : 'fa-cart-plus'}" aria-hidden="true"></i>
+                            <button onclick="App.addToCart(${p.id})" ${soldOut ? 'disabled' : ''} class="tap-target ${soldOut ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-brand-50 hover:bg-brand-700 dark:bg-slate-700 dark:hover:bg-brand-700 text-brand-700 hover:text-white dark:text-brand-300 dark:hover:text-white'} p-2 sm:px-3 sm:py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-sm active:scale-95 flex-shrink-0">
+                                <i class="fa-solid ${soldOut ? 'fa-ban' : 'fa-cart-plus'}"></i>
                                 <span class="hidden sm:inline">${soldOut ? 'نفذ' : 'أضف'}</span>
                             </button>
                         </div>
@@ -1854,17 +2022,13 @@
             const sortMode = $('sortSelect').value;
             AppState.filters.query = query;
             AppState.filters.sort = sortMode;
-
             let filtered = AppState.products.filter(item => {
                 const matchCategory = AppState.filters.category === "الكل" || item.category === AppState.filters.category;
                 const matchQuery = !query || item.name.toLowerCase().includes(query) || (item.description && item.description.toLowerCase().includes(query));
                 let matchDiscount = true;
-                if (AppState.filters.discountOnly) {
-                    matchDiscount = (item.dealType && item.dealType !== 'normal') || (item.originalPrice && item.originalPrice > item.price);
-                }
+                if (AppState.filters.discountOnly) matchDiscount = (item.dealType && item.dealType !== 'normal') || (item.originalPrice && item.originalPrice > item.price);
                 return matchCategory && matchQuery && matchDiscount;
             });
-
             const sorters = {
                 'biggest-discount': (a, b) => ((b.originalPrice - b.price) || 0) - ((a.originalPrice - a.price) || 0),
                 'price-asc': (a, b) => a.price - b.price,
@@ -1874,7 +2038,6 @@
                 'name': (a, b) => a.name.localeCompare(b.name, 'ar')
             };
             if (sorters[sortMode]) filtered.sort(sorters[sortMode]);
-
             renderProductsGrid(filtered);
         }
 
@@ -1922,6 +2085,7 @@
         const debouncedSearch = debounce(() => filterProductsUI(), 300);
         function handleSearchInput() { debouncedSearch(); }
 
+        // ============ Cart ============
         async function addToCart(productId) {
             const product = AppState.products.find(p => p.id === productId);
             if (!product) return;
@@ -1933,16 +2097,13 @@
             }
             await syncCartUI();
             showToast(`تمت إضافة "${product.name}" إلى السلة`, "success");
-            const badge = $('cartCountBadge');
-            badge.style.transform = 'scale(1.4)';
-            setTimeout(() => badge.style.transform = '', 200);
         }
 
         async function updateCartItemQuantity(id, delta) {
             const res = await CartRepo.changeQty(id, delta);
             if (res && !res.ok) {
                 if (res.reason === 'max_qty') showToast(`الحد الأقصى ${STORE_CONFIG.maxQuantityPerItem}`, "warning");
-                else if (res.reason === 'stock_out') showToast("لا توجد كمية كافية في المخزون", "error");
+                else if (res.reason === 'stock_out') showToast("لا توجد كمية كافية", "error");
                 return;
             }
             await syncCartUI();
@@ -1979,43 +2140,40 @@
             let deliveryFee = cartItems.length ? computeDeliveryFee() : 0;
             let discount = 0;
             let effectiveDeliveryFee = deliveryFee;
-
             if (AppState.coupon) {
                 const c = AppState.coupon;
                 if (subtotal < c.minSpend) {
                     AppState.coupon = null;
                     localStorage.removeItem('appliedCoupon_hassan');
-                } else if (c.type === 'percent') {
-                    discount = Math.round(subtotal * c.rate * 10) / 10;
-                } else if (c.type === 'fixed') {
-                    discount = Math.min(subtotal, c.amount);
-                } else if (c.type === 'free_delivery') {
-                    effectiveDeliveryFee = 0;
-                }
+                } else if (c.type === 'percent') discount = Math.round(subtotal * c.rate * 10) / 10;
+                else if (c.type === 'fixed') discount = Math.min(subtotal, c.amount);
+                else if (c.type === 'free_delivery') effectiveDeliveryFee = 0;
             }
-
             let loyaltyDiscount = 0;
             if (AppState.redeemPoints > 0) {
                 loyaltyDiscount = AppState.redeemPoints * STORE_CONFIG.pointValueInShekel;
                 loyaltyDiscount = Math.min(loyaltyDiscount, subtotal - discount);
             }
-
             const grandTotal = Math.max(0, subtotal - discount - loyaltyDiscount + effectiveDeliveryFee);
             const earnedPoints = Math.floor(grandTotal * STORE_CONFIG.pointsPerShekel);
-
             return { subtotal, deliveryFee, effectiveDeliveryFee, discount, loyaltyDiscount, grandTotal, earnedPoints };
         }
 
         async function syncCartUI() {
             const cartItems = await CartRepo.all();
             AppState.cart = cartItems;
-
             const totalCount = cartItems.reduce((a, i) => a + i.quantity, 0);
             const totals = computeCartTotals(cartItems);
 
-            $('cartCountBadge').textContent = totalCount;
+            // Update all cart count badges (desktop + mobile)
+            const cbd = $('cartCountBadgeDesktop');
+            const cbm = $('cartCountBadge');
+            if (cbd) cbd.textContent = totalCount;
+            if (cbm) cbm.textContent = totalCount;
+            const chtd = $('cartHeaderTotalDesktop');
+            if (chtd) chtd.textContent = formatCurrency(totals.subtotal);
+
             $('cartItemCounterText').textContent = `${totalCount} أصناف في السلة`;
-            $('cartHeaderTotal').textContent = formatCurrency(totals.subtotal);
             $('cartSubtotalVal').textContent = formatCurrency(totals.subtotal);
             $('cartGrandTotalVal').textContent = formatCurrency(totals.grandTotal);
 
@@ -2029,34 +2187,26 @@
             if (totals.discount > 0 && AppState.coupon && AppState.coupon.type !== 'free_delivery') {
                 discountRow.classList.remove('hidden');
                 $('cartDiscountVal').textContent = `- ${totals.discount} ₪`;
-            } else {
-                discountRow.classList.add('hidden');
-            }
+            } else discountRow.classList.add('hidden');
 
             const loyaltyRow = $('cartLoyaltyRow');
             if (totals.loyaltyDiscount > 0) {
                 loyaltyRow.classList.remove('hidden');
                 $('cartLoyaltyVal').textContent = `- ${totals.loyaltyDiscount.toFixed(1)} ₪`;
-            } else {
-                loyaltyRow.classList.add('hidden');
-            }
+            } else loyaltyRow.classList.add('hidden');
 
             const pointsHint = $('cartEarnPointsHint');
             if (cartItems.length && totals.earnedPoints > 0) {
                 pointsHint.classList.remove('hidden');
                 $('cartEarnPointsVal').textContent = totals.earnedPoints;
-            } else {
-                pointsHint.classList.add('hidden');
-            }
+            } else pointsHint.classList.add('hidden');
 
             const couponBox = $('activeCouponBadgeBox');
             if (AppState.coupon) {
                 couponBox.classList.remove('hidden');
                 $('activeCouponCodeDisplay').textContent = AppState.coupon.code;
                 $('activeCouponDescDisplay').textContent = AppState.coupon.title;
-            } else {
-                couponBox.classList.add('hidden');
-            }
+            } else couponBox.classList.add('hidden');
 
             renderFreeDeliveryProgress(totals.subtotal);
             renderCartItems(cartItems);
@@ -2073,9 +2223,8 @@
             const msgEl = $('freeDeliveryMessage');
             const barEl = $('freeDeliveryProgressBar');
             const pctEl = $('freeDeliveryPercent');
-
             if (remaining <= 0) {
-                msgEl.innerHTML = `<i class="fa-solid fa-gift text-brand-600" aria-hidden="true"></i> مبروك! حصلت على توصيل مجاني 🎉`;
+                msgEl.innerHTML = `<i class="fa-solid fa-gift text-brand-600"></i> مبروك! حصلت على توصيل مجاني 🎉`;
                 msgEl.className = 'font-black text-brand-700 dark:text-brand-400';
             } else {
                 msgEl.innerHTML = `أضف <strong class="font-mono">${remaining.toFixed(1)} ₪</strong> للحصول على توصيل مجاني`;
@@ -2088,37 +2237,26 @@
         function renderCartItems(items) {
             const container = $('cartItemsList');
             if (!items.length) {
-                container.innerHTML = `
-                    <div class="text-center py-12 sm:py-16 text-slate-400">
-                        <i class="fa-solid fa-basket-shopping text-4xl sm:text-5xl mb-3 text-brand-700/30" aria-hidden="true"></i>
-                        <p class="font-extrabold text-sm text-slate-700 dark:text-slate-200">سلة التسوق فارغة</p>
-                        <p class="text-xs text-slate-400 mt-1">تفقد قسم العروض واختر ما يلزم بيتك.</p>
-                    </div>`;
+                container.innerHTML = `<div class="text-center py-12 sm:py-16 text-slate-400"><i class="fa-solid fa-basket-shopping text-4xl sm:text-5xl mb-3 text-brand-700/30"></i><p class="font-extrabold text-sm text-slate-700 dark:text-slate-200">سلة التسوق فارغة</p><p class="text-xs text-slate-400 mt-1">تفقد قسم العروض واختر ما يلزم بيتك.</p></div>`;
                 return;
             }
             container.innerHTML = items.map(item => {
                 const maxed = typeof item.stock === 'number' && item.quantity >= item.stock;
                 return `
                 <div class="flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm fade-in">
-                    <img src="${escapeHtml(item.image || PLACEHOLDER_IMG)}" alt="${escapeHtml(item.name)}" loading="lazy" decoding="async"
-                        class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover bg-slate-100 flex-shrink-0"
-                        onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
+                    <img src="${escapeHtml(item.image || PLACEHOLDER_IMG)}" alt="" class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover bg-slate-100 flex-shrink-0" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
                     <div class="flex-1 min-w-0">
                         <h4 class="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">${escapeHtml(item.name)}</h4>
-                        <div class="text-brand-700 dark:text-brand-400 font-black text-[11px] sm:text-xs font-mono mt-0.5">
-                            ${formatCurrency(item.price)} <span class="text-[10px] text-slate-400 font-sans">/ ${escapeHtml(item.unit)}</span>
-                        </div>
+                        <div class="text-brand-700 dark:text-brand-400 font-black text-[11px] sm:text-xs font-mono mt-0.5">${formatCurrency(item.price)} <span class="text-[10px] text-slate-400 font-sans">/ ${escapeHtml(item.unit)}</span></div>
                         <div class="flex items-center gap-1.5 mt-1.5">
-                            <button onclick="App.updateQty(${item.id}, -1)" aria-label="تقليل" class="tap-target w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-sm font-black hover:bg-brand-700 hover:text-white transition-colors">−</button>
+                            <button onclick="App.updateQty(${item.id}, -1)" class="tap-target w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-sm font-black hover:bg-brand-700 hover:text-white transition-colors">−</button>
                             <span class="text-xs font-mono font-bold min-w-[20px] text-center">${item.quantity}</span>
-                            <button onclick="App.updateQty(${item.id}, 1)" ${maxed ? 'disabled' : ''} aria-label="زيادة" class="tap-target w-7 h-7 rounded-lg ${maxed ? 'bg-slate-100 dark:bg-slate-700 text-slate-300 cursor-not-allowed' : 'bg-slate-100 dark:bg-slate-700 hover:bg-brand-700 hover:text-white'} flex items-center justify-center text-sm font-black transition-colors">+</button>
+                            <button onclick="App.updateQty(${item.id}, 1)" ${maxed ? 'disabled' : ''} class="tap-target w-7 h-7 rounded-lg ${maxed ? 'bg-slate-100 dark:bg-slate-700 text-slate-300 cursor-not-allowed' : 'bg-slate-100 dark:bg-slate-700 hover:bg-brand-700 hover:text-white'} flex items-center justify-center text-sm font-black transition-colors">+</button>
                         </div>
                     </div>
                     <div class="text-left flex flex-col justify-between items-end self-stretch">
                         <span class="font-black text-xs sm:text-sm font-mono text-slate-900 dark:text-white">${formatCurrency(item.price * item.quantity)}</span>
-                        <button onclick="App.removeItem(${item.id})" aria-label="حذف" class="tap-target flex items-center justify-center text-slate-400 hover:text-rose-500 text-sm transition-colors p-1">
-                            <i class="fa-regular fa-trash-can" aria-hidden="true"></i>
-                        </button>
+                        <button onclick="App.removeItem(${item.id})" class="tap-target flex items-center justify-center text-slate-400 hover:text-rose-500 text-sm transition-colors p-1"><i class="fa-regular fa-trash-can"></i></button>
                     </div>
                 </div>`;
             }).join('');
@@ -2138,26 +2276,21 @@
             }
         }
 
+        // ============ Coupons ============
         async function applyCouponDiscount(codeToApply = null) {
             const input = $('couponCodeInput');
             const notice = $('couponStatusNotice');
             const code = (codeToApply || input.value || "").trim().toUpperCase();
             const setNotice = (msg, type) => {
-                notice.className = `text-[11px] font-bold mt-1.5 ${
-                    type === 'ok' ? 'text-brand-700 dark:text-brand-400'
-                    : type === 'warn' ? 'text-amber-600 dark:text-amber-400'
-                    : 'text-rose-500'
-                }`;
+                notice.className = `text-[11px] font-bold mt-1.5 ${type === 'ok' ? 'text-brand-700 dark:text-brand-400' : type === 'warn' ? 'text-amber-600 dark:text-amber-400' : 'text-rose-500'}`;
                 notice.textContent = msg;
                 notice.classList.remove('hidden');
             };
             if (!code) return setNotice("يرجى كتابة رمز الكوبون أولاً", 'err');
             const coupon = AVAILABLE_COUPONS.find(c => c.code === code);
             if (!coupon) return setNotice("عذراً، هذا الكود غير صالح", 'err');
-
             const cartItems = await CartRepo.all();
             if (!cartItems.length) return setNotice("أضف بعض السلع للسلة أولاً", 'warn');
-
             const subtotal = cartItems.reduce((s, i) => s + i.price * i.quantity, 0);
             if (subtotal < coupon.minSpend) {
                 setNotice(`يتطلب مشتريات بـ ${coupon.minSpend} ₪ على الأقل (سلتك: ${subtotal} ₪)`, 'err');
@@ -2172,7 +2305,6 @@
             closeCouponsCenterModal();
             showToast(`تم تفعيل كوبون ${coupon.code}`, "success");
         }
-
         function removeAppliedCoupon() {
             AppState.coupon = null;
             localStorage.removeItem('appliedCoupon_hassan');
@@ -2181,7 +2313,6 @@
             syncCartUI();
             showToast("تمت إزالة الكوبون", "info");
         }
-
         function renderCouponsList() {
             const container = $('availableCouponsList');
             container.innerHTML = AVAILABLE_COUPONS.map(c => `
@@ -2198,10 +2329,10 @@
                     <button onclick="App.applyCoupon('${c.code}')" class="px-2.5 sm:px-3 py-2 bg-brand-700 hover:bg-brand-800 text-white rounded-xl font-bold whitespace-nowrap shadow-sm transition-all text-[11px] sm:text-xs active:scale-95">استخدم</button>
                 </div>`).join('');
         }
-
         function openCouponsCenterModal() { ModalManager.open($('couponsModal')); }
         function closeCouponsCenterModal() { ModalManager.close($('couponsModal')); }
 
+        // ============ Checkout ============
         function validatePhoneField() {
             const input = $('custMobilePhone');
             const hint = $('phoneHint');
@@ -2210,13 +2341,8 @@
             input.setAttribute('aria-invalid', String(!valid));
             return valid;
         }
-
-        function openCheckoutModal() {
-            toggleCartDrawer(false);
-            ModalManager.open($('checkoutModal'));
-        }
+        function openCheckoutModal() { toggleCartDrawer(false); ModalManager.open($('checkoutModal')); }
         function closeCheckoutModal() { ModalManager.close($('checkoutModal')); }
-
         async function quickOrderWhatsAppWithoutForm() {
             const items = await CartRepo.all();
             if (!items.length) { showToast("سلتك فارغة", "warning"); return; }
@@ -2227,127 +2353,77 @@
             e.preventDefault();
             const items = await CartRepo.all();
             if (!items.length) { showToast("السلة فارغة!", "warning"); return; }
-
             const name = $('custFullName').value.trim();
             const phone = $('custMobilePhone').value.trim();
             const zoneId = $('custDeliveryZone').value;
             const address = $('custDetailedAddress').value.trim();
             const notes = $('custOrderRemarks').value.trim();
             const paymentMethod = document.querySelector('input[name="payOption"]:checked').value;
-
             if (!validatePalestinianPhone(phone)) {
                 $('phoneHint').classList.remove('hidden');
                 $('custMobilePhone').focus();
                 showToast("يرجى إدخال رقم هاتف فلسطيني صحيح", "error");
                 return;
             }
-
             const zone = DELIVERY_ZONES.find(z => z.id === zoneId) || DELIVERY_ZONES[1];
             await SettingsRepo.set('user_profile', { name, phone, zoneId, address });
-
             const totals = computeCartTotals(items);
             const orderId = uid('HSSN');
             const now = new Date();
             const orderDate = now.toLocaleDateString('ar-EG', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
-
             const newOrder = {
-                id: orderId,
-                createdAt: now.getTime(),
-                date: orderDate,
-                status: 'received',
-                statusUpdatedAt: now.getTime(),
+                id: orderId, createdAt: now.getTime(), date: orderDate,
+                status: 'received', statusUpdatedAt: now.getTime(),
                 customer: { name, phone, zone: zone.label, zoneId, address, notes, paymentMethod },
                 items: items.map(i => ({ ...i })),
-                subtotal: totals.subtotal,
-                discount: totals.discount,
-                loyaltyDiscount: totals.loyaltyDiscount,
-                redeemPoints: AppState.redeemPoints,
+                subtotal: totals.subtotal, discount: totals.discount,
+                loyaltyDiscount: totals.loyaltyDiscount, redeemPoints: AppState.redeemPoints,
                 appliedCoupon: AppState.coupon ? { ...AppState.coupon } : null,
                 deliveryFee: totals.effectiveDeliveryFee,
-                grandTotal: totals.grandTotal,
-                earnedPoints: totals.earnedPoints
+                grandTotal: totals.grandTotal, earnedPoints: totals.earnedPoints
             };
-
             AppState.currentOrder = newOrder;
             await OrderRepo.save(newOrder);
-
             await ProductRepo.decrementStock(items.map(i => ({ id: i.id, quantity: i.quantity })));
-
             if (productsSyncChannel) {
-                try {
-                    productsSyncChannel.postMessage({
-                        type: 'products_changed',
-                        action: 'stock_decrement',
-                        orderId: newOrder.id,
-                        at: Date.now()
-                    });
-                } catch(_) {}
+                try { productsSyncChannel.postMessage({ type: 'products_changed', action: 'stock_decrement', orderId: newOrder.id, at: Date.now() }); } catch(_) {}
             }
-
-            if (totals.earnedPoints > 0) {
-                await addLoyaltyPoints(totals.earnedPoints);
-            }
+            if (totals.earnedPoints > 0) await addLoyaltyPoints(totals.earnedPoints);
             if (AppState.redeemPoints > 0) {
                 AppState.redeemPoints = 0;
                 await SettingsRepo.set('redeem_points', 0);
             }
-
             await CartRepo.clear();
             AppState.coupon = null;
             localStorage.removeItem('appliedCoupon_hassan');
-
             AppState.products = await ProductRepo.all();
-
             await syncCartUI();
             await updateOrderBadgeCount();
             renderFlashDealsMiniGrid();
             filterProductsUI();
             updateReorderSection();
-
             closeCheckoutModal();
             displayInvoiceModal(newOrder);
-
-            requestNotificationPermissionAndNotify(
-                'تم استلام طلبك ✅',
-                `طلبك #${orderId} بقيمة ${newOrder.grandTotal} ₪ قيد التحضير`
-            );
-
+            requestNotificationPermissionAndNotify('تم استلام طلبك ✅', `طلبك #${orderId} بقيمة ${newOrder.grandTotal} ₪ قيد التحضير`);
             const waMsg = constructWhatsAppOrderMessage(newOrder);
             const waUrl = `https://wa.me/${STORE_CONFIG.phoneTarget}?text=${encodeURIComponent(waMsg)}`;
             window.open(waUrl, '_blank', 'noopener');
-
             showToast("تم تسجيل طلبك بنجاح!", "success");
         }
 
         function constructWhatsAppOrderMessage(order) {
-            let msg = `🛒 *طلب جديد من سوبرماركت أبو الحسن*\n`;
-            msg += `━━━━━━━━━━━━━━━━━━━━\n`;
-            msg += `🧾 *رقم الفاتورة:* #${order.id}\n`;
-            msg += `📅 *تاريخ الطلب:* ${order.date}\n`;
-            msg += `━━━━━━━━━━━━━━━━━━━━\n`;
-            msg += `👤 *العميل:* ${order.customer.name}\n`;
-            msg += `📱 *رقم الهاتف:* ${order.customer.phone}\n`;
-            msg += `📍 *المنطقة:* ${order.customer.zone}\n`;
-            msg += `🏠 *العنوان:* ${order.customer.address}\n`;
-            msg += `💳 *طريقة الدفع:* ${order.customer.paymentMethod}\n`;
+            let msg = `🛒 *طلب جديد من سوبرماركت أبو الحسن*\n━━━━━━━━━━━━━━━━━━━━\n`;
+            msg += `🧾 *رقم الفاتورة:* #${order.id}\n📅 *تاريخ الطلب:* ${order.date}\n━━━━━━━━━━━━━━━━━━━━\n`;
+            msg += `👤 *العميل:* ${order.customer.name}\n📱 *رقم الهاتف:* ${order.customer.phone}\n📍 *المنطقة:* ${order.customer.zone}\n🏠 *العنوان:* ${order.customer.address}\n💳 *طريقة الدفع:* ${order.customer.paymentMethod}\n`;
             if (order.customer.notes) msg += `📝 *ملاحظات التوصيل:* ${order.customer.notes}\n`;
-            msg += `━━━━━━━━━━━━━━━━━━━━\n`;
-            msg += `🛍️ *قائمة السلع:*\n`;
+            msg += `━━━━━━━━━━━━━━━━━━━━\n🛍️ *قائمة السلع:*\n`;
             order.items.forEach((item, i) => {
                 msg += `${i+1}) *${item.name}*\n   الكمية: ${item.quantity} × ${item.price} ₪ = ${(item.price * item.quantity).toFixed(1)} ₪\n`;
             });
-            msg += `━━━━━━━━━━━━━━━━━━━━\n`;
-            msg += `💵 *المجموع الفرعي:* ${order.subtotal.toFixed(1)} ₪\n`;
-            if (order.appliedCoupon && order.discount > 0) {
-                msg += `🏷️ *كوبون (${order.appliedCoupon.code}):* -${order.discount} ₪\n`;
-            }
-            if (order.loyaltyDiscount > 0) {
-                msg += `⭐ *خصم نقاط:* -${order.loyaltyDiscount.toFixed(1)} ₪\n`;
-            }
-            msg += `🚚 *أجرة التوصيل:* ${order.deliveryFee} ₪\n`;
-            msg += `⭐ *المبلغ الإجمالي:* *${order.grandTotal.toFixed(1)} ₪*\n`;
-            msg += `━━━━━━━━━━━━━━━━━━━━\n`;
-            msg += `يرجى تأكيد استلام الطلب. شكراً لسوبرماركت أبو الحسن!`;
+            msg += `━━━━━━━━━━━━━━━━━━━━\n💵 *المجموع الفرعي:* ${order.subtotal.toFixed(1)} ₪\n`;
+            if (order.appliedCoupon && order.discount > 0) msg += `🏷️ *كوبون (${order.appliedCoupon.code}):* -${order.discount} ₪\n`;
+            if (order.loyaltyDiscount > 0) msg += `⭐ *خصم نقاط:* -${order.loyaltyDiscount.toFixed(1)} ₪\n`;
+            msg += `🚚 *أجرة التوصيل:* ${order.deliveryFee} ₪\n⭐ *المبلغ الإجمالي:* *${order.grandTotal.toFixed(1)} ₪*\n━━━━━━━━━━━━━━━━━━━━\nيرجى تأكيد استلام الطلب. شكراً!`;
             return msg;
         }
 
@@ -2358,7 +2434,6 @@
             $('invClientPhone').textContent = order.customer.phone;
             $('invClientAddress').textContent = `${order.customer.zone} - ${order.customer.address}`;
             $('invClientPayment').textContent = `طريقة الدفع: ${order.customer.paymentMethod}`;
-
             $('invItemsTableBody').innerHTML = order.items.map(item => `
                 <tr class="text-slate-800 dark:text-slate-200">
                     <td class="py-2 sm:py-2.5 font-bold text-[11px] sm:text-xs">${escapeHtml(item.name)}</td>
@@ -2366,11 +2441,9 @@
                     <td class="py-2 sm:py-2.5 text-left font-mono">${item.price} ₪</td>
                     <td class="py-2 sm:py-2.5 text-left font-mono font-bold text-brand-700 dark:text-brand-400">${(item.quantity * item.price).toFixed(1)} ₪</td>
                 </tr>`).join('');
-
             $('invSubtotalNum').textContent = `${order.subtotal.toFixed(1)} ₪`;
             $('invShippingNum').textContent = `${order.deliveryFee} ₪`;
             $('invGrandTotalNum').textContent = `${order.grandTotal.toFixed(1)} ₪`;
-
             const discountBox = $('invDiscountBox');
             if (order.appliedCoupon && order.appliedCoupon.type !== 'free_delivery' && order.discount > 0) {
                 discountBox.classList.remove('hidden');
@@ -2380,31 +2453,20 @@
                 discountBox.classList.remove('hidden');
                 $('invDiscountLabel').textContent = `كوبون (${order.appliedCoupon.code}):`;
                 $('invDiscountNum').textContent = `توصيل مجاني 🚚`;
-            } else {
-                discountBox.classList.add('hidden');
-            }
-
+            } else discountBox.classList.add('hidden');
             const loyaltyBox = $('invLoyaltyBox');
             if (order.loyaltyDiscount > 0) {
                 loyaltyBox.classList.remove('hidden');
                 $('invLoyaltyNum').textContent = `- ${order.loyaltyDiscount.toFixed(1)} ₪`;
-            } else {
-                loyaltyBox.classList.add('hidden');
-            }
-
+            } else loyaltyBox.classList.add('hidden');
             const earnedPointsRow = $('invEarnedPointsRow');
             if (order.earnedPoints > 0) {
                 earnedPointsRow.classList.remove('hidden');
                 $('invEarnedPointsNum').textContent = `+ ${order.earnedPoints}`;
-            } else {
-                earnedPointsRow.classList.add('hidden');
-            }
-
+            } else earnedPointsRow.classList.add('hidden');
             renderOrderStatusTracker(order);
-
             const waMsg = constructWhatsAppOrderMessage(order);
             $('invWhatsAppDirectLink').href = `https://wa.me/${STORE_CONFIG.phoneTarget}?text=${encodeURIComponent(waMsg)}`;
-
             ModalManager.open($('invoiceModal'));
         }
 
@@ -2419,13 +2481,10 @@
                     ${ORDER_STATUS_FLOW.map((st, idx) => {
                         const meta = ORDER_STATUS_LABELS[st];
                         const active = idx <= currentIdx;
-                        return `
-                            <div class="flex flex-col items-center gap-1 z-10 relative" style="flex:1">
-                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs ${active ? 'bg-brand-600 text-white shadow-md' : 'bg-slate-200 dark:bg-slate-700 text-slate-400'}">
-                                    <i class="fa-solid ${meta.icon}" aria-hidden="true"></i>
-                                </div>
-                                <span class="text-[9px] font-bold text-center ${active ? 'text-brand-700 dark:text-brand-400' : 'text-slate-400'}">${meta.label}</span>
-                            </div>`;
+                        return `<div class="flex flex-col items-center gap-1 z-10 relative" style="flex:1">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs ${active ? 'bg-brand-600 text-white shadow-md' : 'bg-slate-200 dark:bg-slate-700 text-slate-400'}"><i class="fa-solid ${meta.icon}"></i></div>
+                            <span class="text-[9px] font-bold text-center ${active ? 'text-brand-700 dark:text-brand-400' : 'text-slate-400'}">${meta.label}</span>
+                        </div>`;
                     }).join('')}
                 </div>`;
         }
@@ -2459,8 +2518,7 @@
                 const product = AppState.products.find(p => p.id === it.id);
                 if (!product) { skipped++; continue; }
                 const res = await CartRepo.add(product);
-                if (res.ok) added += 1;
-                else skipped++;
+                if (res.ok) added += 1; else skipped++;
             }
             for (const it of items) {
                 if (it.quantity > 1) {
@@ -2482,15 +2540,11 @@
             const section = $('reorderSection');
             const preview = $('reorderItemsPreview');
             const last = await OrderRepo.latest();
-            if (!last || !last.items || !last.items.length) {
-                section.classList.add('hidden');
-                return;
-            }
+            if (!last || !last.items || !last.items.length) { section.classList.add('hidden'); return; }
             section.classList.remove('hidden');
             preview.innerHTML = last.items.slice(0, 6).map(it => `
                 <div class="flex-shrink-0 flex items-center gap-1.5 bg-white dark:bg-slate-800 rounded-lg px-2 py-1 border border-slate-200 dark:border-slate-700">
-                    <img src="${escapeHtml(it.image || PLACEHOLDER_IMG)}" alt="" class="w-6 h-6 rounded object-cover bg-slate-100"
-                        onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
+                    <img src="${escapeHtml(it.image || PLACEHOLDER_IMG)}" alt="" class="w-6 h-6 rounded object-cover bg-slate-100" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
                     <span class="text-[10px] font-bold text-slate-700 dark:text-slate-200 max-w-[80px] truncate">${escapeHtml(it.name)}</span>
                     <span class="text-[10px] font-mono text-slate-400">×${it.quantity}</span>
                 </div>`).join('') + (last.items.length > 6 ? `<span class="text-[10px] text-slate-500 self-center font-bold">+${last.items.length - 6} أخرى</span>` : '');
@@ -2505,11 +2559,7 @@
             const orders = await OrderRepo.sorted();
             const container = $('ordersHistoryListContainer');
             if (!orders.length) {
-                container.innerHTML = `
-                    <div class="text-center py-10 text-slate-400">
-                        <i class="fa-solid fa-file-invoice text-4xl mb-2 opacity-40" aria-hidden="true"></i>
-                        <p class="font-bold text-xs">لا يوجد لديك طلبات مسجلة بعد.</p>
-                    </div>`;
+                container.innerHTML = `<div class="text-center py-10 text-slate-400"><i class="fa-solid fa-file-invoice text-4xl mb-2 opacity-40"></i><p class="font-bold text-xs">لا يوجد لديك طلبات مسجلة بعد.</p></div>`;
             } else {
                 container.innerHTML = orders.map(ord => {
                     const meta = ORDER_STATUS_LABELS[ord.status || 'received'];
@@ -2527,21 +2577,14 @@
                                 <span class="text-[10px] text-slate-400 block truncate">${escapeHtml(ord.date)}</span>
                             </div>
                             <span class="${statusColor} text-[10px] font-black px-2 py-1 rounded-lg inline-flex items-center gap-1 flex-shrink-0">
-                                <i class="fa-solid ${meta.icon}" aria-hidden="true"></i>
-                                ${meta.label}
+                                <i class="fa-solid ${meta.icon}"></i> ${meta.label}
                             </span>
                         </div>
                         <div class="flex items-center justify-between gap-2">
-                            <span class="text-brand-700 dark:text-brand-400 font-mono font-black text-sm">
-                                ${ord.grandTotal.toFixed(1)} ₪ <span class="text-slate-500 font-normal text-[10px]">(${ord.items.length} أصناف)</span>
-                            </span>
+                            <span class="text-brand-700 dark:text-brand-400 font-mono font-black text-sm">${ord.grandTotal.toFixed(1)} ₪ <span class="text-slate-500 font-normal text-[10px]">(${ord.items.length} أصناف)</span></span>
                             <div class="flex gap-1.5">
-                                <button onclick="App.reorder('${ord.id}')" class="px-2.5 py-1.5 bg-brand-50 hover:bg-brand-700 hover:text-white text-brand-700 dark:bg-slate-800 dark:text-brand-300 rounded-lg font-bold transition-all text-[11px] active:scale-95">
-                                    <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
-                                </button>
-                                <button onclick="App.viewPastOrder('${ord.id}')" class="px-3 py-1.5 bg-brand-700 hover:bg-brand-800 text-white rounded-lg font-bold transition-all text-[11px] active:scale-95">
-                                    عرض
-                                </button>
+                                <button onclick="App.reorder('${ord.id}')" class="px-2.5 py-1.5 bg-brand-50 hover:bg-brand-700 hover:text-white text-brand-700 dark:bg-slate-800 dark:text-brand-300 rounded-lg font-bold transition-all text-[11px] active:scale-95"><i class="fa-solid fa-rotate-right"></i></button>
+                                <button onclick="App.viewPastOrder('${ord.id}')" class="px-3 py-1.5 bg-brand-700 hover:bg-brand-800 text-white rounded-lg font-bold transition-all text-[11px] active:scale-95">عرض</button>
                             </div>
                         </div>
                     </div>`;
@@ -2550,7 +2593,6 @@
             ModalManager.open($('ordersModal'));
         }
         function closeOrdersModal() { ModalManager.close($('ordersModal')); }
-
         async function viewPastOrderDetails(orderId) {
             const found = await OrderRepo.find(orderId);
             if (!found) return;
@@ -2558,25 +2600,26 @@
             closeOrdersModal();
             displayInvoiceModal(found);
         }
-
         async function reorderById(orderId) {
             const found = await OrderRepo.find(orderId);
             if (!found) return;
             closeOrdersModal();
             await reorderProducts(found.items);
         }
-
         async function updateOrderBadgeCount() {
             const orders = await OrderRepo.all();
-            const badge = $('orderBadge');
-            if (orders.length > 0) {
-                badge.textContent = orders.length > 99 ? '99+' : orders.length;
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
+            const badgeD = $('orderBadgeDesktop');
+            const badgeM = $('orderBadge');
+            [badgeD, badgeM].forEach(b => {
+                if (!b) return;
+                if (orders.length > 0) {
+                    b.textContent = orders.length > 99 ? '99+' : orders.length;
+                    b.classList.remove('hidden');
+                } else b.classList.add('hidden');
+            });
         }
 
+        // ============ Inventory ============
         function openInventoryManagerModal() { ModalManager.open($('inventoryManagerModal')); }
         function closeInventoryManagerModal() { ModalManager.close($('inventoryManagerModal')); }
 
@@ -2593,28 +2636,18 @@
             const unit = $('newProdUnit').value.trim() || 'حبة';
             const badge = $('newProdBadge').value.trim();
             const image = $('newProdImage').value.trim() || PLACEHOLDER_IMG;
-
             if (!name || !(price > 0)) { showToast("يرجى ملء الحقول المطلوبة", "error"); return; }
             if (originalPrice !== null && originalPrice <= price) { showToast("السعر الأصلي يجب أن يكون أكبر", "warning"); return; }
-
-            await ProductRepo.upsert({
-                name, category, dealType, price, originalPrice, stock, sku,
-                unit, badge, image,
-                rating: 0, reviewsCount: 0, salesCount: 0,
-                description: 'صنف مضاف حديثاً في سوبرماركت أبو الحسن.'
-            });
-
+            await ProductRepo.upsert({ name, category, dealType, price, originalPrice, stock, sku, unit, badge, image, rating: 0, reviewsCount: 0, salesCount: 0, description: 'صنف مضاف حديثاً في سوبرماركت أبو الحسن.' });
             AppState.products = await ProductRepo.all();
             renderFlashDealsMiniGrid();
             renderCategoryTabs();
             filterProductsUI();
             closeInventoryManagerModal();
             e.target.reset();
-
             if (productsSyncChannel) {
                 try { productsSyncChannel.postMessage({ type: 'products_changed', action: 'add', at: Date.now() }); } catch(_) {}
             }
-
             showToast(`تمت إضافة "${name}"`, "success");
         }
 
@@ -2627,39 +2660,27 @@
             renderCategoryTabs();
             filterProductsUI();
             closeInventoryManagerModal();
-
             if (productsSyncChannel) {
                 try { productsSyncChannel.postMessage({ type: 'products_changed', action: 'reset', at: Date.now() }); } catch(_) {}
             }
-
             showToast("تمت استعادة السلع الأساسية", "info");
         }
 
-        // ================================================================
-        // ============ CSV Import (NEW) ============
-        // ================================================================
-        // ملاحظة: هذا الاستيراد يستبدل كل المنتجات الحالية بالمنتجات الواردة في الملف.
-        // الأعمدة المطلوبة: name, category, price, originalPrice, stock, sku, unit, dealType, badge, image, description
-        // ================================================================
-
+        // ============ CSV ============
         function parseCSV(text) {
-            const rows = [];
-            let row = [];
-            let field = '';
-            let inQuotes = false;
+            const rows = []; let row = [], field = '', inQuotes = false;
             for (let i = 0; i < text.length; i++) {
-                const c = text[i];
-                const next = text[i + 1];
+                const c = text[i], next = text[i + 1];
                 if (inQuotes) {
                     if (c === '"' && next === '"') { field += '"'; i++; }
-                    else if (c === '"') { inQuotes = false; }
-                    else { field += c; }
+                    else if (c === '"') inQuotes = false;
+                    else field += c;
                 } else {
-                    if (c === '"') { inQuotes = true; }
+                    if (c === '"') inQuotes = true;
                     else if (c === ',') { row.push(field); field = ''; }
-                    else if (c === '\r') { /* skip */ }
+                    else if (c === '\r') {}
                     else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
-                    else { field += c; }
+                    else field += c;
                 }
             }
             if (field || row.length) { row.push(field); rows.push(row); }
@@ -2669,152 +2690,80 @@
         async function importProductsCSV(event) {
             const file = event.target.files && event.target.files[0];
             if (!file) return;
-
-            if (!file.name.toLowerCase().endsWith('.csv')) {
-                showToast('يُقبل فقط ملفات CSV', 'error');
-                event.target.value = '';
-                return;
-            }
-
+            if (!file.name.toLowerCase().endsWith('.csv')) { showToast('يُقبل فقط ملفات CSV', 'error'); event.target.value = ''; return; }
             const currentCount = AppState.products.length;
-            const msg = currentCount > 0
-                ? `سيتم حذف ${currentCount} منتج حالي واستبدالها بمنتجات الملف:\n"${file.name}"\n\nهل تريد المتابعة؟`
-                : `سيتم استيراد المنتجات من الملف:\n"${file.name}"\n\nهل تريد المتابعة؟`;
-
-            if (!confirm(msg)) {
-                event.target.value = '';
-                return;
-            }
-
+            const msg = currentCount > 0 ? `سيتم حذف ${currentCount} منتج حالي واستبدالها بمنتجات الملف:\n"${file.name}"\n\nهل تريد المتابعة؟` : `سيتم استيراد المنتجات من الملف:\n"${file.name}"\n\nهل تريد المتابعة؟`;
+            if (!confirm(msg)) { event.target.value = ''; return; }
             const reader = new FileReader();
             reader.onload = async (e) => {
                 try {
                     const text = String(e.target.result || '').replace(/^\uFEFF/, '');
                     const rows = parseCSV(text);
-
-                    if (rows.length < 2) {
-                        showToast('الملف فارغ أو التنسيق غير صحيح', 'error');
-                        event.target.value = '';
-                        return;
-                    }
-
+                    if (rows.length < 2) { showToast('الملف فارغ', 'error'); event.target.value = ''; return; }
                     const headers = rows[0].map(h => h.trim().toLowerCase());
                     const requiredHeaders = ['name', 'category', 'price'];
                     const missing = requiredHeaders.filter(h => !headers.includes(h));
-                    if (missing.length) {
-                        showToast(`أعمدة مفقودة في الملف: ${missing.join(', ')}`, 'error');
-                        event.target.value = '';
-                        return;
-                    }
-
+                    if (missing.length) { showToast(`أعمدة مفقودة: ${missing.join(', ')}`, 'error'); event.target.value = ''; return; }
                     const idx = (key) => headers.indexOf(key);
-                    const get = (row, key) => {
-                        const i = idx(key);
-                        return i >= 0 ? String(row[i] || '').trim() : '';
-                    };
-
+                    const get = (row, key) => { const i = idx(key); return i >= 0 ? String(row[i] || '').trim() : ''; };
                     const newProducts = [];
                     for (let i = 1; i < rows.length; i++) {
                         const row = rows[i];
                         const name = get(row, 'name');
                         const price = parseFloat(get(row, 'price'));
                         if (!name || !(price > 0)) continue;
-
                         const origRaw = get(row, 'originalprice');
                         const originalPrice = origRaw ? parseFloat(origRaw) : null;
                         const dealType = get(row, 'dealtype') || 'normal';
                         const validDealTypes = ['normal', 'percentage', 'bogo', 'flash', 'bulk'];
-
                         newProducts.push({
-                            name,
-                            category: get(row, 'category') || 'المؤونة والزيوت',
-                            price,
+                            name, category: get(row, 'category') || 'المؤونة والزيوت', price,
                             originalPrice: (originalPrice && originalPrice > price) ? originalPrice : null,
                             stock: parseInt(get(row, 'stock'), 10) || 0,
-                            sku: get(row, 'sku'),
-                            unit: get(row, 'unit') || 'حبة',
+                            sku: get(row, 'sku'), unit: get(row, 'unit') || 'حبة',
                             dealType: validDealTypes.includes(dealType) ? dealType : 'normal',
                             badge: get(row, 'badge'),
                             image: get(row, 'image') || PLACEHOLDER_IMG,
                             description: get(row, 'description') || 'صنف من سوبرماركت أبو الحسن.',
-                            rating: 0,
-                            reviewsCount: 0,
-                            salesCount: 0
+                            rating: 0, reviewsCount: 0, salesCount: 0
                         });
                     }
-
-                    if (!newProducts.length) {
-                        showToast('لم يُعثر على منتجات صالحة في الملف', 'warning');
-                        event.target.value = '';
-                        return;
-                    }
-
-                    if (newProducts.length > 50) {
-                        if (!confirm(`تم العثور على ${newProducts.length} منتج. سيتم الاستبدال الآن. متابعة؟`)) {
-                            event.target.value = '';
-                            return;
-                        }
-                    }
-
+                    if (!newProducts.length) { showToast('لا منتجات صالحة', 'warning'); event.target.value = ''; return; }
                     showToast('جاري الاستيراد...', 'info');
                     await ProductRepo.clearAll();
                     for (const p of newProducts) await ProductRepo.upsert(p);
-
                     await SettingsRepo.set('db_initialized', true);
-
                     AppState.products = await ProductRepo.all();
                     renderFlashDealsMiniGrid();
                     renderCategoryTabs();
                     filterProductsUI();
                     renderRecentlyViewed();
-
                     if (productsSyncChannel) {
-                        try {
-                            productsSyncChannel.postMessage({
-                                type: 'products_changed',
-                                action: 'csv_import',
-                                count: newProducts.length,
-                                at: Date.now()
-                            });
-                        } catch(_) {}
+                        try { productsSyncChannel.postMessage({ type: 'products_changed', action: 'csv_import', count: newProducts.length, at: Date.now() }); } catch(_) {}
                     }
-
                     closeInventoryManagerModal();
                     showToast(`✅ تم استيراد ${newProducts.length} منتج بنجاح!`, 'success');
-                    console.info(`CSV import: ${newProducts.length} products`);
                 } catch (err) {
                     ErrorLogger.log(err, 'csv-import');
                     showToast('خطأ في قراءة الملف: ' + (err.message || 'خطأ غير معروف'), 'error');
                 }
                 event.target.value = '';
             };
-            reader.onerror = () => {
-                showToast('تعذر قراءة الملف', 'error');
-                event.target.value = '';
-            };
             reader.readAsText(file, 'UTF-8');
         }
 
         function exportProductsCSV() {
-            if (!AppState.products.length) {
-                showToast('لا توجد منتجات للتصدير', 'warning');
-                return;
-            }
-
+            if (!AppState.products.length) { showToast('لا توجد منتجات للتصدير', 'warning'); return; }
             const headers = ['name','category','price','originalPrice','stock','sku','unit','dealType','badge','image','description'];
             const rows = [headers.join(',')];
-
             for (const p of AppState.products) {
                 const row = headers.map(h => {
                     const v = p[h] == null ? '' : String(p[h]);
-                    if (v.includes(',') || v.includes('"') || v.includes('\n') || v.includes('\r')) {
-                        return `"${v.replace(/"/g, '""')}"`;
-                    }
+                    if (v.includes(',') || v.includes('"') || v.includes('\n') || v.includes('\r')) return `"${v.replace(/"/g, '""')}"`;
                     return v;
                 });
                 rows.push(row.join(','));
             }
-
             const csv = '\uFEFF' + rows.join('\n');
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
@@ -2828,6 +2777,7 @@
             showToast(`تم تصدير ${AppState.products.length} منتج`, 'success');
         }
 
+        // ============ Flash Timer ============
         let flashIntervalId = null;
         function startFlashDealsCountdown() {
             function update() {
@@ -2851,7 +2801,6 @@
             update();
             if (flashIntervalId) clearInterval(flashIntervalId);
             flashIntervalId = setInterval(update, 1000);
-
             document.addEventListener('visibilitychange', () => {
                 if (document.hidden) {
                     if (flashIntervalId) { clearInterval(flashIntervalId); flashIntervalId = null; }
@@ -2872,11 +2821,8 @@
 
         function populateDeliveryZones() {
             const sel = $('custDeliveryZone');
-            sel.innerHTML = DELIVERY_ZONES.map(z =>
-                `<option value="${z.id}" ${z.isDefault ? 'selected' : ''}>${escapeHtml(z.label)} (توصيل ${z.fee} ₪)</option>`
-            ).join('');
+            sel.innerHTML = DELIVERY_ZONES.map(z => `<option value="${z.id}" ${z.isDefault ? 'selected' : ''}>${escapeHtml(z.label)} (توصيل ${z.fee} ₪)</option>`).join('');
         }
-
         function handleDeliveryZoneChange() { syncCartUI(); }
 
         async function requestNotificationPermissionAndNotify(title, body) {
@@ -2885,11 +2831,7 @@
                 let perm = Notification.permission;
                 if (perm === 'default') perm = await Notification.requestPermission();
                 if (perm === 'granted') {
-                    new Notification(title, {
-                        body,
-                        icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%2315803d'/%3E%3Ctext x='96' y='125' font-size='100' text-anchor='middle' fill='white'%3E🛒%3C/text%3E%3C/svg%3E",
-                        tag: 'abuhassan-order'
-                    });
+                    new Notification(title, { body, icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%2315803d'/%3E%3Ctext x='96' y='125' font-size='100' text-anchor='middle' fill='white'%3E🛒%3C/text%3E%3C/svg%3E", tag: 'abuhassan-order' });
                 }
             } catch(e) { ErrorLogger.log(e, 'notification'); }
         }
@@ -2919,52 +2861,45 @@
                 </div>`).join('');
         }
 
-        // ================================================================
-        // ============ Cross-Tab Sync with admin.html ============
-        // ================================================================
+        // ============ Cross-Tab Sync ============
         let productsSyncChannel = null;
-        try {
-            productsSyncChannel = new BroadcastChannel('abuhassan_products_sync');
-        } catch (e) {
-            console.warn('BroadcastChannel غير مدعوم في هذا المتصفح');
-        }
+        try { productsSyncChannel = new BroadcastChannel('abuhassan_products_sync'); } catch (e) {}
 
-        async function refreshProductsFromDB(silent = true) {
+        async function refreshFromDB(silent = true) {
             try {
                 const fresh = await ProductRepo.all();
-                const same = JSON.stringify(fresh) === JSON.stringify(AppState.products);
-                if (same) return;
-
-                AppState.products = fresh;
-
-                renderFlashDealsMiniGrid();
-                renderCategoryTabs();
-                filterProductsUI();
-                await updateReorderSection();
-
-                AppState.wishlist.forEach(id => {
-                    if (!fresh.find(p => p.id === id)) AppState.wishlist.delete(id);
-                });
-                AppState.recentlyViewed = AppState.recentlyViewed.filter(id => fresh.find(p => p.id === id));
-                updateWishlistBadge();
-                renderRecentlyViewed();
-
-                await syncCartUI();
-
-                if (!silent) {
-                    showToast('تم تحديث المنتجات تلقائياً', 'info');
+                const productsChanged = JSON.stringify(fresh) !== JSON.stringify(AppState.products);
+                if (productsChanged) {
+                    AppState.products = fresh;
+                    renderFlashDealsMiniGrid();
+                    renderCategoryTabs();
+                    filterProductsUI();
+                    await updateReorderSection();
+                    AppState.wishlist.forEach(id => { if (!fresh.find(p => p.id === id)) AppState.wishlist.delete(id); });
+                    AppState.recentlyViewed = AppState.recentlyViewed.filter(id => fresh.find(p => p.id === id));
+                    updateWishlistBadge();
+                    renderRecentlyViewed();
+                    await syncCartUI();
                 }
-                console.info('🔄 Products refreshed from DB:', fresh.length);
+                // Also refresh daily content
+                await loadDailyContent();
+                renderDailyUpdates();
+
+                if (!silent && productsChanged) showToast('تم تحديث البيانات تلقائياً', 'info');
             } catch (err) {
-                ErrorLogger.log(err, 'refreshProductsFromDB');
+                ErrorLogger.log(err, 'refreshFromDB');
             }
         }
 
         if (productsSyncChannel) {
             productsSyncChannel.onmessage = (e) => {
-                if (e.data && e.data.type === 'products_changed') {
-                    console.info('📢 Received sync message:', e.data.action);
-                    refreshProductsFromDB(false);
+                if (!e.data) return;
+                if (e.data.type === 'products_changed') {
+                    console.info('📢 Products sync:', e.data.action);
+                    refreshFromDB(false);
+                } else if (e.data.type === 'announcements_changed') {
+                    console.info('📢 Announcements sync');
+                    loadDailyContent().then(renderDailyUpdates);
                 }
             };
         }
@@ -2973,14 +2908,13 @@
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden && Date.now() - lastVisibilityRefresh > 1000) {
                 lastVisibilityRefresh = Date.now();
-                refreshProductsFromDB(true);
+                refreshFromDB(true);
             }
         });
-
         window.addEventListener('focus', () => {
             if (Date.now() - lastVisibilityRefresh > 1000) {
                 lastVisibilityRefresh = Date.now();
-                refreshProductsFromDB(true);
+                refreshFromDB(true);
             }
         });
 
@@ -2988,20 +2922,16 @@
         async function init() {
             try {
                 showProductsSkeleton();
-
                 await idb.open();
-
                 let products = await idb.getAll('products');
                 const wasInitialized = await SettingsRepo.get('db_initialized');
                 if (!products.length && !wasInitialized) {
                     await ProductRepo.seedDefaults();
                     await SettingsRepo.set('db_initialized', true);
                     products = await idb.getAll('products');
-                    console.info('🌱 First run: seeded default products');
                 } else if (!wasInitialized) {
                     await SettingsRepo.set('db_initialized', true);
                 }
-
                 for (const p of products) {
                     let dirty = false;
                     if (typeof p.stock !== 'number') { p.stock = 30; dirty = true; }
@@ -3023,8 +2953,9 @@
 
                 AppState.loyaltyPoints = (await SettingsRepo.get('loyalty_points')) || 0;
                 AppState.redeemPoints = (await SettingsRepo.get('redeem_points')) || 0;
-
                 AppState.adminAuthed = sessionStorage.getItem('admin_authed') === 'yes';
+
+                await loadDailyContent();
 
                 applyThemeMode(localStorage.getItem('abuhassan_theme') || 'light');
                 setupOfflineDetection();
@@ -3041,27 +2972,22 @@
                 updateWishlistBadge();
                 updateLoyaltyBadge();
                 renderRecentlyViewed();
+                renderDailyUpdates();
 
                 await syncCartUI();
                 await updateOrderBadgeCount();
                 await updateReorderSection();
 
                 if (productsSyncChannel) console.info('🔗 Cross-tab sync active');
-
-                console.info(`✅ ${STORE_CONFIG.name} v2 ready | ${AppState.products.length} منتج | نقاط: ${AppState.loyaltyPoints}`);
+                console.info(`✅ ${STORE_CONFIG.name} ready | ${AppState.products.length} منتج | إعلانات: ${AppState.announcements.length} | صور: ${AppState.gallery.length}`);
             } catch (err) {
                 ErrorLogger.log(err, 'init');
                 showToast("تعذر تهيئة قاعدة البيانات المحلية", "error");
-                $('productsGrid').innerHTML = `
-                    <div class="col-span-full text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-rose-200 dark:border-rose-900">
-                        <i class="fa-solid fa-triangle-exclamation text-3xl text-rose-500 mb-3" aria-hidden="true"></i>
-                        <h3 class="font-bold text-slate-900 dark:text-white">تعذر تحميل التطبيق</h3>
-                        <p class="text-xs text-slate-500 mt-1">قد يكون متصفحك في وضع خاص أو لا يدعم IndexedDB</p>
-                        <button onclick="location.reload()" class="mt-3 px-4 py-2 bg-brand-700 text-white text-xs font-bold rounded-xl">إعادة المحاولة</button>
-                    </div>`;
+                $('productsGrid').innerHTML = `<div class="col-span-full text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-rose-200 dark:border-rose-900"><i class="fa-solid fa-triangle-exclamation text-3xl text-rose-500 mb-3"></i><h3 class="font-bold text-slate-900 dark:text-white">تعذر تحميل التطبيق</h3><button onclick="location.reload()" class="mt-3 px-4 py-2 bg-brand-700 text-white text-xs font-bold rounded-xl">إعادة المحاولة</button></div>`;
             }
         }
 
+        // ============ Global API ============
         window.App = {
             addToCart,
             updateQty: updateCartItemQuantity,
@@ -3085,6 +3011,9 @@
         window.reorderLastOrder = reorderLastOrder;
         window.reorderFromInvoice = reorderFromInvoice;
         window.toggleTheme = toggleTheme;
+        window.toggleMobileMenu = toggleMobileMenu;
+        window.openLightbox = openLightbox;
+        window.closeLightbox = closeLightbox;
         window.openCouponsCenterModal = openCouponsCenterModal;
         window.closeCouponsCenterModal = closeCouponsCenterModal;
         window.openOrdersModal = openOrdersModal;
@@ -3116,6 +3045,17 @@
         window.toggleDiscountOnlyFilter = toggleDiscountOnlyFilter;
         window.filterOnlyDiscountedOffers = filterOnlyDiscountedOffers;
         window.resetFilters = resetFilters;
+        window.renderDailyUpdates = renderDailyUpdates;
+
+        // Close mobile menu on outside click
+        document.addEventListener('click', (e) => {
+            const panel = $('mobileMenuPanel');
+            const btn = $('mobileMenuIcon')?.parentElement;
+            if (!panel || !panel.classList.contains('open')) return;
+            if (!panel.contains(e.target) && btn !== e.target && !btn.contains(e.target)) {
+                toggleMobileMenu(false);
+            }
+        });
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init, { once: true });
