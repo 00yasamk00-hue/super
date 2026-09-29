@@ -362,44 +362,7 @@
         </div>
     </section>
 
-    <!-- Flash Deals -->
-    <section class="container mx-auto px-3 sm:px-4 pt-4 sm:pt-6 pb-2 no-print">
-        <div class="bg-gradient-to-l from-rose-500/10 via-amber-500/10 to-brand-500/10 dark:from-rose-950/20 dark:via-amber-950/20 dark:to-brand-950/20 border border-rose-200 dark:border-rose-900/50 rounded-2xl sm:rounded-3xl p-3 sm:p-6 mb-4 sm:mb-6">
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-5">
-                <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
-                    <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-rose-600 text-white flex items-center justify-center text-base sm:text-2xl shadow-lg shadow-rose-600/30 flex-shrink-0">
-                        <i class="fa-solid fa-stopwatch animate-pulse" aria-hidden="true"></i>
-                    </div>
-                    <div class="min-w-0 flex-1">
-                        <div class="flex items-center gap-2">
-                            <h2 class="text-sm sm:text-xl font-black text-slate-900 dark:text-white truncate">صفقات اليوم الخاطفة</h2>
-                            <span class="bg-rose-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full flex-shrink-0">محدودة</span>
-                        </div>
-                        <p class="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">تخفيضات متجددة يومياً — تنتهي خلال:</p>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-1 sm:gap-2 font-mono" role="timer" aria-live="off">
-                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl shadow-sm text-center min-w-[44px]">
-                        <span id="flashTimerHours" class="block font-black text-sm sm:text-lg text-rose-600 dark:text-rose-400 leading-none">--</span>
-                        <span class="text-[8px] sm:text-[9px] text-slate-400 block mt-0.5 font-sans">ساعة</span>
-                    </div>
-                    <span class="font-black text-rose-600 text-sm sm:text-lg">:</span>
-                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl shadow-sm text-center min-w-[44px]">
-                        <span id="flashTimerMinutes" class="block font-black text-sm sm:text-lg text-rose-600 dark:text-rose-400 leading-none">--</span>
-                        <span class="text-[8px] sm:text-[9px] text-slate-400 block mt-0.5 font-sans">دقيقة</span>
-                    </div>
-                    <span class="font-black text-rose-600 text-sm sm:text-lg">:</span>
-                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl shadow-sm text-center min-w-[44px]">
-                        <span id="flashTimerSeconds" class="block font-black text-sm sm:text-lg text-rose-600 dark:text-rose-400 leading-none">--</span>
-                        <span class="text-[8px] sm:text-[9px] text-slate-400 block mt-0.5 font-sans">ثانية</span>
-                    </div>
-                </div>
-            </div>
-
-            <div id="flashDealsMiniGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4"></div>
-        </div>
-    </section>
+    
 
     <!-- Recently Viewed -->
     <section id="recentlyViewedSection" class="container mx-auto px-3 sm:px-4 pb-2 hidden no-print">
@@ -2900,7 +2863,7 @@
                 AppState.redeemPoints = (await SettingsRepo.get('redeem_points')) || 0;
                 AppState.adminAuthed = sessionStorage.getItem('admin_authed') === 'yes';
 
-                await loadDailyContent();
+                aawait loadDailyContent();
 
                 applyThemeMode(localStorage.getItem('abuhassan_theme') || 'light');
                 setupOfflineDetection();
@@ -2908,7 +2871,7 @@
                 populateDeliveryZones();
                 await loadSavedCustomerProfile();
 
-                startFlashDealsCountdown();
+                
                 renderFlashDealsMiniGrid();
                 renderCategoryTabs();
                 renderCouponsList();
